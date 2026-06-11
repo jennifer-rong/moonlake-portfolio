@@ -138,7 +138,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 680px) { .topbar nav { display: none; } }
 
   /* ---- hero ---- */
-  .hero { position: relative; border-bottom: 1px solid var(--hair); min-height: 88vh; }
+  .hero { position: relative; border-bottom: 1px solid var(--hair); min-height: 70vh; }
   .hero-figure { position: absolute; inset: 0; line-height: 0; }
   .hero-figure img { width: 100%; height: 100%; object-fit: cover; object-position: right top; display: block; }
   /* scrim grounds the copy: solid paper at the bottom-left fading up + right so the
@@ -194,7 +194,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   }
 
   /* ---- section heads ---- */
-  .work { padding: 64px 0 0; }
+  .work { padding: 44px 0 0; }
   .work-head {
     display: flex; justify-content: space-between; align-items: flex-end;
     gap: 28px; flex-wrap: wrap; margin-bottom: 8px;
@@ -203,7 +203,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
   }
-  .style-switch { margin: 40px 0 0; }
+  .style-switch { margin: 26px 0 0; }
   .style-switch-label {
     display: block; font-size: 11px; font-weight: 700; letter-spacing: .2em;
     text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px;
@@ -222,16 +222,16 @@ TEMPLATE = r"""<!DOCTYPE html>
   .style-tabs button[aria-selected="true"] {
     background: var(--ink); color: var(--paper); box-shadow: 0 2px 10px rgba(13,13,14,.16);
   }
-  .carousel-head { margin-top: 26px; }
+  .carousel-head { margin-top: 16px; }
   .carousel-head .kicker { display: block; margin-bottom: 8px; }
   .carousel-title {
     font-size: clamp(22px, 2.4vw, 32px); font-weight: 800;
     letter-spacing: -.03em; margin: 0;
   }
   /* ---- coverflow carousel ---- */
-  .carousel { position: relative; margin-top: 30px; }
+  .carousel { position: relative; margin-top: 20px; }
   .viewport {
-    overflow: hidden; padding: 18px 0 8px; cursor: grab; touch-action: pan-y;
+    overflow: hidden; padding: 10px 0 6px; cursor: grab; touch-action: pan-y;
     user-select: none; -webkit-user-select: none;
   }
   .viewport.dragging, .viewport.dragging .slide { cursor: grabbing; }
@@ -299,7 +299,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* active asset meta — single focused readout below the carousel */
   .active-meta {
     display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 30px 56px; align-items: start; max-width: 940px; margin: 24px auto 0;
+    gap: 30px 56px; align-items: start; max-width: 940px; margin: 16px auto 0;
     padding-top: 26px; border-top: 1px solid var(--hair); text-align: left;
   }
   .active-meta .am-kicker { display: block; margin-bottom: 12px; color: var(--accent); }
@@ -313,7 +313,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .am-row .k { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
   .am-row .v { font-weight: 500; color: var(--ink); font-size: 14px; margin-top: 4px; line-height: 1.45; }
   /* dots */
-  .car-dots { display: flex; gap: 10px; justify-content: center; margin-top: 30px; }
+  .car-dots { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
   .car-dots button {
     width: 9px; height: 9px; border-radius: 50%; padding: 0; cursor: pointer;
     border: 1px solid var(--ink-3); background: transparent; transition: background .2s ease, transform .2s ease;
@@ -326,7 +326,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   /* ---- process ---- */
   .process {
-    padding: 72px 0; background: var(--paper-2);
+    padding: 52px 0; background: var(--paper-2);
     border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); margin-top: 64px;
   }
   .process .kicker { display: block; margin-bottom: 14px; }
@@ -334,7 +334,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
     letter-spacing: -.035em; margin: 0 0 14px; max-width: 18ch; line-height: 1.02;
   }
-  .process .sec-sub { margin: 0 0 40px; max-width: 60ch; }
+  .process .sec-sub { margin: 0 0 28px; max-width: 60ch; }
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); }
   .step {
     padding: 0 30px; border-left: 1px solid var(--hair);
@@ -352,8 +352,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   /* ---- CTA ---- */
   .cta { background: var(--void); color: var(--paper); }
-  .cta .wrap { padding: 84px 40px; text-align: center; }
-  .cta img { height: 104px; margin: 0 auto 38px; opacity: .95; }
+  .cta .wrap { padding: 58px 40px; text-align: center; }
+  .cta img { height: 104px; margin: 0 auto 26px; opacity: .95; }
   .cta h2 {
     font-size: clamp(34px, 5vw, 66px); font-weight: 800;
     letter-spacing: -.04em; line-height: .98; margin: 0 0 22px;
@@ -383,12 +383,12 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* ---- footer ---- */
   .foot {
     display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    padding: 44px 0; font-size: 12px; letter-spacing: .04em; color: var(--ink-3);
+    padding: 30px 0; font-size: 12px; letter-spacing: .04em; color: var(--ink-3);
   }
   .foot a:hover { color: var(--ink-2); }
 
   /* ---- capabilities ---- */
-  .caps { padding: 72px 0; }
+  .caps { padding: 52px 0; }
   .caps .kicker { display: block; margin-bottom: 14px; }
   .caps h2 {
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
@@ -409,7 +409,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 520px) { .cap-grid { grid-template-columns: 1fr; } }
 
   /* ---- studio use cases ---- */
-  .usecases { padding: 72px 0; border-top: 1px solid var(--hair); }
+  .usecases { padding: 52px 0; border-top: 1px solid var(--hair); }
   .usecases .kicker { display: block; margin-bottom: 14px; }
   .usecases h2 {
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
