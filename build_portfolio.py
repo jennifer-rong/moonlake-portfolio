@@ -16,10 +16,11 @@ BUILD = HERE / "_ml_build"        # resized, web-optimized intermediates
 
 # key -> source filename in assets/. Renders are downscaled to 1400px max edge.
 IMAGE_FILES = {
-    "mushroom_spellbook": "chibi_render1.png",
-    "stone_lantern": "chibi_render2.png",
-    "picnic_basket": "chibi_render3.png",
-    "checkpoint_barricade": "semireal_render1.png",
+    "rune_signpost": "assetrender1.png",
+    "altar_table": "assetrender2.png",
+    "anvil_hammer": "assetrender3.png",
+    "vending_machine": "assetrender4.png",
+    "clock_relief": "assetrender5.png",
 }
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
@@ -202,31 +203,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   .work-head h2 {
     font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
-  }
-  .style-switch { margin: 26px 0 0; }
-  .style-switch-label {
-    display: block; font-size: 11px; font-weight: 700; letter-spacing: .2em;
-    text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px;
-  }
-  .style-tabs {
-    display: inline-flex; gap: 6px; flex-wrap: wrap; padding: 6px;
-    background: var(--paper-2); border: 1px solid var(--hair); border-radius: 999px;
-  }
-  .style-tabs button {
-    font-size: 13px; font-weight: 700; letter-spacing: .04em;
-    padding: 12px 26px; border: 0; border-radius: 999px;
-    background: transparent; color: var(--ink-2); cursor: pointer;
-    transition: background .2s ease, color .2s ease, box-shadow .2s ease;
-  }
-  .style-tabs button:hover { color: var(--ink); }
-  .style-tabs button[aria-selected="true"] {
-    background: var(--ink); color: var(--paper); box-shadow: 0 2px 10px rgba(13,13,14,.16);
-  }
-  .carousel-head { margin-top: 16px; }
-  .carousel-head .kicker { display: block; margin-bottom: 8px; }
-  .carousel-title {
-    font-size: clamp(22px, 2.4vw, 32px); font-weight: 800;
-    letter-spacing: -.03em; margin: 0;
   }
   /* ---- coverflow carousel ---- */
   .carousel { position: relative; margin-top: 20px; }
@@ -506,15 +482,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         <h2>Example asset outputs.</h2>
       </div>
     </div>
-    <p class="sec-sub">Early examples across distinct visual styles, from cozy chibi props to semi-realistic, weathered environment assets. Switch styles below; more directions are on the way.</p>
-    <div class="style-switch">
-      <span class="style-switch-label">Browse by style — tap to switch</span>
-      <div class="style-tabs" id="style-tabs" role="tablist"></div>
-    </div>
-    <div class="carousel-head">
-      <span class="kicker" id="carousel-kicker"></span>
-      <h3 class="carousel-title" id="carousel-title"></h3>
-    </div>
+    <p class="sec-sub">A selection of game-ready asset previews, each listed with its triangle count. More directions are on the way.</p>
     <div class="carousel">
       <div class="viewport"><div class="track" id="track"></div></div>
       <button class="car-btn prev" id="car-prev" aria-label="Previous asset">&#8249;</button>
@@ -613,66 +581,61 @@ const IMAGES = {
 
 /* ============================================================
    CONFIG — data-driven content.
-   `styleSets` drives the carousel; each set is one art direction,
-   selectable via the style tabs. Each set lists its render previews.
+   `assets` drives the carousel; each entry is one render preview,
+   listed with its triangle count.
    ============================================================ */
-const styleSets = [
+const assets = [
   {
-    id: "semireal",
-    tab: "Semi-Realistic",
-    kicker: "Style 01 — showing now",
-    title: "Semi-Realistic / Apocalyptic Assets",
-    assets: [
-      {
-        img: "checkpoint_barricade",
-        name: "Wrecked Roadblock Checkpoint",
-        desc: "A battered makeshift checkpoint — crossed hazard-striped boom barriers, toppled STOP signs, concrete jersey barriers, sandbags, and twisted rebar on a cracked road base.",
-        brief: "Abandoned military-style road checkpoint: crossed boom barriers with hazard stripes, fallen STOP signs, concrete barriers, sandbags, exposed rebar, and weathered debris.",
-        use: "Post-apocalyptic level blocker / survival game checkpoint / urban ruin set dressing",
-        style: "Semi-realistic, weathered, post-apocalyptic, PBR, grounded",
-        status: "Preview",
-      },
-    ],
+    img: "rune_signpost",
+    name: "Runed Wayfinding Signpost",
+    desc: "A weathered wooden signpost with stacked directional planks, hand-carved runes, and faint glowing glyphs, set into a mossy rock-and-root base.",
+    brief: "Fantasy wooden signpost: several pointing plank signs with carved runic lettering and subtle glowing glyphs, on a worn post anchored in a mossy rock base with exposed roots.",
+    use: "Fantasy RPG wayfinding / crossroads marker / forest or village path set dressing",
+    style: "Stylized realism, weathered wood, fantasy, hand-painted detail",
+    tris: "13k",
+    status: "Preview",
   },
   {
-    id: "chibi",
-    tab: "Chibi / Cozy",
-    kicker: "Style 02 — showing now",
-    title: "Chibi / Cozy Game Assets",
-    assets: [
-      {
-        img: "mushroom_spellbook",
-        name: "Toadstool Reading Nook",
-        desc: "A cozy chibi environment prop with a soft mushroom-cap seat, tiny open book, clover patch, and rounded cottagecore details.",
-        brief: "Oversized toadstool reading nook with a mushroom cap, open book, clovers, small flowers, and soft mossy ground details.",
-        use: "Cozy sim / farming game / Roblox world prop / fantasy village decoration",
-        style: "Chibi, cozy, pastel, cottagecore, rounded forms",
-        status: "Preview",
-      },
-      {
-        img: "stone_lantern",
-        name: "Mossy Garden Lantern",
-        desc: "A stylized lantern post with warm glowing light, ivy, moss, small flowers, and readable low-poly-inspired forms.",
-        brief: "Mossy garden lantern post with warm light, stone base, ivy-wrapped pole, small flower buds, and soft fantasy garden details.",
-        use: "Village path / cozy RPG / garden biome / Roblox environment detail",
-        style: "Chibi, cozy fantasy, pastel, soft low-poly, garden prop",
-        status: "Preview",
-      },
-      {
-        img: "picnic_basket",
-        name: "Wicker Picnic Basket",
-        desc: "A cute wicker picnic basket environment prop with flowers, mushrooms, foliage, and soft cottagecore world-dressing details.",
-        brief: "Wicker picnic basket with lid slightly open, tiny wildflowers, mushrooms, leafy foliage, and soft moss around the base.",
-        use: "Cozy sim / picnic area / forest biome / farming game decoration",
-        style: "Chibi, cottagecore, pastel, stylized nature, soft forms",
-        status: "Preview",
-      },
-    ],
+    img: "altar_table",
+    name: "Runic Altar Table",
+    desc: "A carved stone altar table flanked by two wrought-iron candelabras with lit candles, its surface etched with runes on a cracked stone pedestal.",
+    brief: "Stone ritual altar: rectangular slab top with carved runes, two five-arm iron candelabras holding white candles, supported by a fractured stone pedestal.",
+    use: "Dungeon ritual room / wizard's study / fantasy interior centerpiece",
+    style: "Stylized realism, carved stone, dark fantasy, candlelit",
+    tris: "26k",
+    status: "Preview",
+  },
+  {
+    img: "anvil_hammer",
+    name: "Blacksmith's Anvil & Hammer",
+    desc: "A heavy forged anvil with engraved scrollwork along its sides and a leather-wrapped hammer resting against the base.",
+    brief: "Blacksmith anvil with horn and step, decorative engraved flanks, paired with a wrapped-handle forging hammer; worn dark-iron finish.",
+    use: "Forge / smithy interior / crafting-station prop for RPG or survival games",
+    style: "Stylized realism, forged iron, medieval craft, PBR metal",
+    tris: "25k",
+    status: "Preview",
+  },
+  {
+    img: "vending_machine",
+    name: "Neon Vending Machine",
+    desc: "A compact sci-fi vending machine with neon-rimmed glass, stocked bottle shelves, glowing buttons, and a coin-and-dispenser panel.",
+    brief: "Cyberpunk vending machine: dark chassis with cyan and magenta edge lighting, front glass showing stocked bottles, four colored buttons, coin slot, keypad, and dispenser tray.",
+    use: "Cyberpunk street / sci-fi interior / arcade or transit-station set dressing",
+    style: "Stylized sci-fi, cyberpunk, neon-lit, clean hard-surface",
+    tris: "23k",
+    status: "Preview",
+  },
+  {
+    img: "clock_relief",
+    name: "Clockwork Wall Relief",
+    desc: "An ornate wall relief in weathered marble framing an exposed brass clock movement with roman numerals and interlocking gears.",
+    brief: "Decorative clock wall plaque: carved marble border with scrollwork corners, central skeleton clock face showing roman numerals and visible brass gears; aged, grimy finish.",
+    use: "Steampunk interior / clocktower / mansion or library wall decoration",
+    style: "Stylized realism, steampunk, marble and brass, ornate",
+    tris: "26k",
+    status: "Preview",
   },
 ];
-
-let activeSet = 0;
-let assets = styleSets[activeSet].assets;
 
 const capabilities = [
   { t: "Props & environment assets", d: "Standalone set pieces and background props for dressing scenes." },
@@ -708,7 +671,6 @@ const $ = (s) => document.querySelector(s);
 const track = $("#track");
 const dotsWrap = $("#car-dots");
 const metaWrap = $("#active-meta");
-const tabsWrap = $("#style-tabs");
 let active = 0;
 let slides = [];
 let dots = [];
@@ -722,6 +684,7 @@ function renderMeta(i) {
       <p class="desc">${a.desc}</p>
     </div>
     <div class="am-specs">
+      <div class="am-row"><div class="k">Triangles</div><div class="v">${a.tris} tris</div></div>
       <div class="am-row"><div class="k">Brief</div><div class="v">${a.brief}</div></div>
       <div class="am-row"><div class="k">Use case</div><div class="v">${a.use}</div></div>
       <div class="am-row"><div class="k">Style</div><div class="v">${a.style}</div></div>
@@ -813,23 +776,7 @@ function buildCarousel() {
   center();
 }
 
-function selectSet(k) {
-  activeSet = (k + styleSets.length) % styleSets.length;
-  assets = styleSets[activeSet].assets;
-  $("#carousel-kicker").textContent = styleSets[activeSet].kicker;
-  $("#carousel-title").textContent = styleSets[activeSet].title;
-  [...tabsWrap.children].forEach((b, j) => b.setAttribute("aria-selected", j === activeSet));
-  buildCarousel();
-}
-
-tabsWrap.innerHTML = styleSets
-  .map((s, k) => `<button role="tab" data-set="${k}" aria-selected="${k === 0}">${s.tab}</button>`).join("");
-tabsWrap.addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (b) selectSet(+b.dataset.set);
-});
-
-selectSet(0);
+buildCarousel();
 window.addEventListener("load", center);
 window.addEventListener("resize", center);
 
@@ -888,7 +835,7 @@ function openLb(i) {
   $("#lb-img").src = IMAGES[a.img];
   $("#lb-img").alt = a.name;
   $("#lb-title").textContent = a.name;
-  $("#lb-sub").textContent = `${a.status} · ${a.style}`;
+  $("#lb-sub").textContent = `${a.status} · ${a.tris} tris · ${a.style}`;
   lb.classList.add("open");
   lb.setAttribute("aria-hidden", "false");
 }
