@@ -21,6 +21,9 @@ IMAGE_FILES = {
     "anvil_hammer": "assetrender3.png",
     "vending_machine": "assetrender4.png",
     "clock_relief": "assetrender5.png",
+    "rose_cluster": "assetrender6.png",
+    "ivy_lantern": "assetrender7.png",
+    "bee_skep": "assetrender8.png",
 }
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
@@ -633,6 +636,36 @@ const assets = [
     use: "Steampunk interior / clocktower / mansion or library wall decoration",
     style: "Stylized realism, steampunk, marble and brass, ornate",
     tris: "26k",
+    status: "Preview",
+  },
+  {
+    img: "rose_cluster",
+    name: "Blooming Rose Cluster",
+    desc: "A soft cluster of dusty-pink roses nestled in pale sage leaves, forming a low rounded bush.",
+    brief: "Stylized rose bush: dome of clustered pink roses with sculpted petals and muted green foliage; cozy, hand-painted finish.",
+    use: "Cozy sim / garden biome / fairy-tale set dressing / Roblox decoration",
+    style: "Chibi, cozy, pastel, soft stylized florals",
+    tris: "9k",
+    status: "Preview",
+  },
+  {
+    img: "ivy_lantern",
+    name: "Ivy Shepherd's Lantern",
+    desc: "An ornate cream lantern hanging from a curved wrought-iron shepherd's hook wrapped in trailing ivy.",
+    brief: "Hanging garden lantern: cream filigree lantern on a curved metal shepherd's-hook pole with climbing ivy leaves; soft fantasy garden detail.",
+    use: "Cozy RPG path / garden biome / fairy-village lighting prop",
+    style: "Chibi, cozy fantasy, pastel, soft stylized",
+    tris: "9k",
+    status: "Preview",
+  },
+  {
+    img: "bee_skep",
+    name: "Honeybee Skep Hive",
+    desc: "A rounded woven bee skep with dripping honey, a small entrance hole, and bees buzzing around clusters of tiny flowers.",
+    brief: "Stylized bee skep: stacked coiled-straw dome with honey drips, a round entrance, scattered bees, and small dried flowers; warm cozy palette.",
+    use: "Cozy sim / farming game / meadow biome / Roblox apiary prop",
+    style: "Chibi, cozy, warm pastel, soft stylized nature",
+    tris: "9k",
     status: "Preview",
   },
 ];
