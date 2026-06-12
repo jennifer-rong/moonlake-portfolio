@@ -17,10 +17,6 @@ BUILD = HERE / "_ml_build"        # resized, web-optimized intermediates
 # key -> source filename in assets/. Renders are downscaled to 1400px max edge.
 IMAGE_FILES = {
     "rune_signpost": "assetrender1.png",
-    "altar_table": "assetrender2.png",
-    "anvil_hammer": "assetrender3.png",
-    "vending_machine": "assetrender4.png",
-    "clock_relief": "assetrender5.png",
     "rose_cluster": "assetrender6.png",
     "ivy_lantern": "assetrender7.png",
     "bee_skep": "assetrender8.png",
@@ -210,28 +206,54 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* ---- coverflow carousel ---- */
   .carousel { position: relative; margin-top: 20px; }
   .viewport {
-    overflow: hidden; padding: 10px 0 6px; cursor: grab; touch-action: pan-y;
+    overflow: hidden; padding: 34px 0 38px; cursor: grab; touch-action: pan-y;
     user-select: none; -webkit-user-select: none;
   }
   .viewport.dragging, .viewport.dragging .slide { cursor: grabbing; }
   .track {
-    display: flex; align-items: center; gap: clamp(18px, 3.4vw, 52px);
+    display: flex; align-items: center; gap: 0;
     will-change: transform; transition: transform .62s cubic-bezier(.22,.61,.36,1);
   }
+  /* overlapping cards: neighbours tuck behind the focused card */
   .slide {
-    flex: 0 0 auto; width: clamp(248px, 44vw, 540px);
-    opacity: .32; transform: scale(.72); filter: saturate(.55);
-    transition: transform .62s cubic-bezier(.22,.61,.36,1), opacity .5s ease, filter .5s ease;
+    flex: 0 0 auto; width: clamp(238px, 35vw, 392px);
+    margin: 0 clamp(-72px, -5vw, -44px);
+    opacity: .5; transform: scale(.82); z-index: 1;
+    transition: transform .62s cubic-bezier(.22,.61,.36,1), opacity .5s ease;
     cursor: grab;
   }
-  .slide.active { opacity: 1; transform: scale(1); filter: none; }
-  .slide .frame img { -webkit-user-drag: none; user-select: none; -webkit-user-select: none; }
-  /* enlarge button under the focused image */
+  .slide.active { opacity: 1; transform: scale(1); z-index: 3; }
+  /* the card itself: render on top, details below */
+  .card {
+    background: var(--paper); border: 1px solid var(--hair); border-radius: 18px;
+    overflow: hidden; box-shadow: 0 10px 28px rgba(13,13,14,.10);
+    transition: box-shadow .5s ease, border-color .5s ease;
+  }
+  .slide.active .card { box-shadow: 0 26px 60px rgba(13,13,14,.24); border-color: var(--ink-3); }
+  .card-media { position: relative; aspect-ratio: 1 / 1; background: var(--paper-2); }
+  .card-media img {
+    width: 100%; height: 100%; object-fit: contain; display: block;
+    -webkit-user-drag: none; user-select: none; -webkit-user-select: none;
+  }
+  .card-info { padding: 15px 17px 18px; text-align: left; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .card-name { font-size: 16px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; margin: 0; }
+  .card-tris {
+    flex: 0 0 auto; font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    padding: 5px 11px; border-radius: 999px; background: var(--ink); color: var(--paper); white-space: nowrap;
+  }
+  .card-desc {
+    margin: 9px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  /* enlarge button — top-right corner of the focused card's image */
   .preview-btn {
+    position: absolute; top: 10px; right: 10px; z-index: 3;
     display: flex; align-items: center; justify-content: center;
-    width: 40px; height: 40px; padding: 0; margin: 16px auto 0;
-    border: 1px solid var(--ink-3); border-radius: 50%;
-    background: var(--paper); color: var(--ink); cursor: pointer;
+    width: 34px; height: 34px; padding: 0;
+    border: 1px solid var(--hair); border-radius: 50%;
+    background: rgba(249,248,243,.85); color: var(--ink); cursor: pointer;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
     opacity: 0; pointer-events: none;
     transition: opacity .4s ease, background .2s ease, color .2s ease, border-color .2s ease;
   }
@@ -252,16 +274,14 @@ TEMPLATE = r"""<!DOCTYPE html>
   .drag-hint .arw.r { animation: nudge 1.6s ease-in-out infinite; }
   .drag-hint .arw.l { animation: nudge 1.6s ease-in-out infinite reverse; }
   @media (prefers-reduced-motion: reduce) { .drag-hint .arw { animation: none; } }
-  .slide .frame {
-    position: relative; aspect-ratio: 4 / 3; background: transparent;
+  .card-media .badge {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-2); background: rgba(249,248,243,.85); padding: 4px 8px; border-radius: 999px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    opacity: 0; transition: opacity .4s ease;
   }
-  .slide .frame img { width: 100%; height: 100%; object-fit: contain; }
-  .slide .badge {
-    position: absolute; top: 0; left: 0; z-index: 2;
-    font-size: 10px; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
-    color: var(--ink-3); opacity: 0; transition: opacity .4s ease;
-  }
-  .slide.active .badge { opacity: 1; }
+  .slide.active .card-media .badge { opacity: 1; }
 
   /* nav arrows */
   .car-btn {
@@ -275,22 +295,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   .car-btn.prev { left: 6px; } .car-btn.next { right: 6px; }
   @media (max-width: 560px) { .car-btn { width: 42px; height: 42px; font-size: 18px; } }
 
-  /* active asset meta — single focused readout below the carousel */
-  .active-meta {
-    display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
-    gap: 30px 56px; align-items: start; max-width: 940px; margin: 16px auto 0;
-    padding-top: 26px; border-top: 1px solid var(--hair); text-align: left;
-  }
-  .active-meta .am-kicker { display: block; margin-bottom: 12px; color: var(--accent); }
-  .active-meta h3 {
-    font-size: clamp(26px, 3vw, 40px); font-weight: 800;
-    letter-spacing: -.035em; line-height: 1.02; margin: 0 0 14px;
-  }
-  .active-meta .desc { font-weight: 400; color: var(--ink-2); font-size: 16px; margin: 0; max-width: 46ch; }
-  /* metadata reads as secondary: small label / muted value rows */
-  .am-specs { display: flex; flex-direction: column; gap: 16px; }
-  .am-row .k { font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); }
-  .am-row .v { font-weight: 500; color: var(--ink); font-size: 14px; margin-top: 4px; line-height: 1.45; }
   /* dots */
   .car-dots { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
   .car-dots button {
@@ -298,10 +302,6 @@ TEMPLATE = r"""<!DOCTYPE html>
     border: 1px solid var(--ink-3); background: transparent; transition: background .2s ease, transform .2s ease;
   }
   .car-dots button[aria-current="true"] { background: var(--accent); border-color: var(--accent); transform: scale(1.15); }
-  @media (max-width: 680px) {
-    .active-meta { grid-template-columns: 1fr; gap: 18px; }
-    .am-specs { gap: 24px; }
-  }
 
   /* ---- process ---- */
   .process {
@@ -491,7 +491,6 @@ TEMPLATE = r"""<!DOCTYPE html>
       <button class="car-btn prev" id="car-prev" aria-label="Previous asset">&#8249;</button>
       <button class="car-btn next" id="car-next" aria-label="Next asset">&#8250;</button>
       <div class="drag-hint" id="drag-hint"><span class="arw l">&#8249;</span> Drag or swipe to browse <span class="arw r">&#8250;</span></div>
-      <div class="active-meta" id="active-meta"></div>
       <div class="car-dots" id="car-dots"></div>
     </div>
   </div>
@@ -599,46 +598,6 @@ const assets = [
     status: "Preview",
   },
   {
-    img: "altar_table",
-    name: "Runic Altar Table",
-    desc: "A carved stone altar table flanked by two wrought-iron candelabras with lit candles, its surface etched with runes on a cracked stone pedestal.",
-    brief: "Stone ritual altar: rectangular slab top with carved runes, two five-arm iron candelabras holding white candles, supported by a fractured stone pedestal.",
-    use: "Dungeon ritual room / wizard's study / fantasy interior centerpiece",
-    style: "Stylized realism, carved stone, dark fantasy, candlelit",
-    tris: "26k",
-    status: "Preview",
-  },
-  {
-    img: "anvil_hammer",
-    name: "Blacksmith's Anvil & Hammer",
-    desc: "A heavy forged anvil with engraved scrollwork along its sides and a leather-wrapped hammer resting against the base.",
-    brief: "Blacksmith anvil with horn and step, decorative engraved flanks, paired with a wrapped-handle forging hammer; worn dark-iron finish.",
-    use: "Forge / smithy interior / crafting-station prop for RPG or survival games",
-    style: "Stylized realism, forged iron, medieval craft, PBR metal",
-    tris: "25k",
-    status: "Preview",
-  },
-  {
-    img: "vending_machine",
-    name: "Neon Vending Machine",
-    desc: "A compact sci-fi vending machine with neon-rimmed glass, stocked bottle shelves, glowing buttons, and a coin-and-dispenser panel.",
-    brief: "Cyberpunk vending machine: dark chassis with cyan and magenta edge lighting, front glass showing stocked bottles, four colored buttons, coin slot, keypad, and dispenser tray.",
-    use: "Cyberpunk street / sci-fi interior / arcade or transit-station set dressing",
-    style: "Stylized sci-fi, cyberpunk, neon-lit, clean hard-surface",
-    tris: "23k",
-    status: "Preview",
-  },
-  {
-    img: "clock_relief",
-    name: "Clockwork Wall Relief",
-    desc: "An ornate wall relief in weathered marble framing an exposed brass clock movement with roman numerals and interlocking gears.",
-    brief: "Decorative clock wall plaque: carved marble border with scrollwork corners, central skeleton clock face showing roman numerals and visible brass gears; aged, grimy finish.",
-    use: "Steampunk interior / clocktower / mansion or library wall decoration",
-    style: "Stylized realism, steampunk, marble and brass, ornate",
-    tris: "26k",
-    status: "Preview",
-  },
-  {
     img: "rose_cluster",
     name: "Blooming Rose Cluster",
     desc: "A soft cluster of dusty-pink roses nestled in pale sage leaves, forming a low rounded bush.",
@@ -703,26 +662,9 @@ const $ = (s) => document.querySelector(s);
 /* ---- coverflow carousel ---- */
 const track = $("#track");
 const dotsWrap = $("#car-dots");
-const metaWrap = $("#active-meta");
 let active = 0;
 let slides = [];
 let dots = [];
-
-function renderMeta(i) {
-  const a = assets[i];
-  metaWrap.innerHTML = `
-    <div class="am-main">
-      <span class="kicker am-kicker">${a.status}</span>
-      <h3>${a.name}</h3>
-      <p class="desc">${a.desc}</p>
-    </div>
-    <div class="am-specs">
-      <div class="am-row"><div class="k">Triangles</div><div class="v">${a.tris} tris</div></div>
-      <div class="am-row"><div class="k">Brief</div><div class="v">${a.brief}</div></div>
-      <div class="am-row"><div class="k">Use case</div><div class="v">${a.use}</div></div>
-      <div class="am-row"><div class="k">Style</div><div class="v">${a.style}</div></div>
-    </div>`;
-}
 
 function currentTX() {
   // translate the track so the active slide sits in the middle of the viewport
@@ -736,7 +678,6 @@ function go(i) {
   active = (i + slides.length) % slides.length;
   slides.forEach((s, k) => s.classList.toggle("active", k === active));
   dots.forEach((d, k) => d.setAttribute("aria-current", k === active));
-  renderMeta(active);
   center();
 }
 
@@ -792,11 +733,20 @@ viewport.addEventListener("pointercancel", endDrag);
 function buildCarousel() {
   track.innerHTML = assets.map((a, i) => `
     <div class="slide${i === 0 ? " active" : ""}" data-index="${i}">
-      <div class="frame">
-        <span class="badge">${a.status}</span>
-        <img src="${IMAGES[a.img]}" alt="${a.name} — render preview" loading="lazy" draggable="false">
+      <div class="card">
+        <div class="card-media">
+          <span class="badge">${a.status}</span>
+          <button class="preview-btn" type="button" aria-label="Enlarge ${a.name}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg></button>
+          <img src="${IMAGES[a.img]}" alt="${a.name} — render preview" loading="lazy" draggable="false">
+        </div>
+        <div class="card-info">
+          <div class="card-head">
+            <h4 class="card-name">${a.name}</h4>
+            <span class="card-tris">${a.tris} tris</span>
+          </div>
+          <p class="card-desc">${a.desc}</p>
+        </div>
       </div>
-      <button class="preview-btn" type="button" aria-label="Enlarge ${a.name}"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg></button>
     </div>`).join("");
   dotsWrap.innerHTML = assets
     .map((_, i) => `<button data-index="${i}" aria-current="${i === 0}" aria-label="Asset ${i + 1}"></button>`).join("");
@@ -805,7 +755,6 @@ function buildCarousel() {
   active = 0;
   const hint = $("#drag-hint");
   if (hint) hint.classList.toggle("hide", slides.length < 2);
-  renderMeta(0);
   center();
 }
 
