@@ -224,18 +224,25 @@ TEMPLATE = r"""<!DOCTYPE html>
   .slide {
     flex: 0 0 auto; width: clamp(238px, 35vw, 392px);
     margin: 0 clamp(-72px, -5vw, -44px);
-    opacity: .5; transform: scale(.82); z-index: 1;
-    transition: transform .62s cubic-bezier(.22,.61,.36,1), opacity .5s ease;
+    transform: scale(.82); z-index: 1;
+    transition: transform .62s cubic-bezier(.22,.61,.36,1);
     cursor: grab;
   }
-  .slide.active { opacity: 1; transform: scale(1); z-index: 3; }
+  .slide.active { transform: scale(1); z-index: 3; }
   /* the card itself: render on top, details below */
   .card {
+    position: relative;
     background: var(--paper); border: 1px solid var(--hair); border-radius: 18px;
     overflow: hidden; box-shadow: 0 10px 28px rgba(13,13,14,.10);
     transition: box-shadow .5s ease, border-color .5s ease;
   }
+  /* solid paper veil dims neighbours without making the card see-through */
+  .card::after {
+    content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
+    background: var(--paper); opacity: .58; transition: opacity .5s ease;
+  }
   .slide.active .card { box-shadow: 0 26px 60px rgba(13,13,14,.24); border-color: var(--ink-3); }
+  .slide.active .card::after { opacity: 0; }
   .card-media { position: relative; aspect-ratio: 1 / 1; background: var(--paper-2); }
   .card-media img {
     width: 100%; height: 100%; object-fit: contain; display: block;
@@ -680,7 +687,10 @@ function center() { track.style.transform = `translateX(${currentTX()}px)`; }
 
 function go(i) {
   active = (i + slides.length) % slides.length;
-  slides.forEach((s, k) => s.classList.toggle("active", k === active));
+  slides.forEach((s, k) => {
+    s.classList.toggle("active", k === active);
+    s.style.zIndex = String(slides.length - Math.abs(k - active)); // focused card on top, neighbours tuck behind symmetrically
+  });
   dots.forEach((d, k) => d.setAttribute("aria-current", k === active));
   center();
 }
@@ -721,14 +731,22 @@ viewport.addEventListener("pointermove", (e) => {
   if (Math.abs(dragDX) > 6) dragMoved = true;
   track.style.transform = `translateX(${baseTX + dragDX}px)`;
 });
-function endDrag() {
+function endDrag(e) {
   if (!dragging) return;
   dragging = false;
   viewport.classList.remove("dragging");
-  const threshold = Math.min(220, viewport.clientWidth * 0.22);
-  if (dragDX <= -threshold) go(active + 1);
-  else if (dragDX >= threshold) go(active - 1);
-  else center();   // snap back to current slide
+  if (dragMoved) {
+    const threshold = Math.min(220, viewport.clientWidth * 0.22);
+    if (dragDX <= -threshold) go(active + 1);
+    else if (dragDX >= threshold) go(active - 1);
+    else center();   // snap back to current slide
+  } else {
+    // a tap (no drag) — jump to whichever card was clicked
+    const el = e ? document.elementFromPoint(e.clientX, e.clientY) : null;
+    const s = el && el.closest(".slide");
+    if (s) { const i = +s.dataset.index; if (i !== active) go(i); else center(); }
+    else center();
+  }
   dragDX = 0;
 }
 viewport.addEventListener("pointerup", endDrag);
@@ -756,10 +774,9 @@ function buildCarousel() {
     .map((_, i) => `<button data-index="${i}" aria-current="${i === 0}" aria-label="Asset ${i + 1}"></button>`).join("");
   slides = [...track.querySelectorAll(".slide")];
   dots = [...dotsWrap.querySelectorAll("button")];
-  active = 0;
   const hint = $("#drag-hint");
   if (hint) hint.classList.toggle("hide", slides.length < 2);
-  center();
+  go(0);
 }
 
 buildCarousel();
