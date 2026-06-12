@@ -571,7 +571,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 <footer><div class="wrap foot">
   <span>© 2026 Moonlake — AI agents for 3D game asset workflows.</span>
-  <span><a href="mailto:studios@moonlake.ai">studios@moonlake.ai</a></span>
+  <span><a href="https://moonlakeai.com">moonlakeai.com</a></span>
 </div></footer>
 
 <div class="lb" id="lightbox" aria-hidden="true">
