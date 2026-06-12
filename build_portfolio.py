@@ -138,7 +138,13 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 680px) { .topbar nav { display: none; } }
 
   /* ---- hero ---- */
-  .hero { position: relative; border-bottom: 1px solid var(--hair); min-height: 70vh; }
+  /* fills the viewport; copy bottom-aligned with a top floor so the
+     headline always clears the fixed top bar */
+  .hero {
+    position: relative; border-bottom: 1px solid var(--hair);
+    min-height: 100vh; min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
   .hero-figure { position: absolute; inset: 0; line-height: 0; }
   .hero-figure img { width: 100%; height: 100%; object-fit: cover; object-position: right top; display: block; }
   /* scrim grounds the copy: solid paper at the bottom-left fading up + right so the
@@ -149,7 +155,7 @@ TEMPLATE = r"""<!DOCTYPE html>
       linear-gradient(to top, var(--paper) 24%, rgba(249,248,243,.74) 46%, rgba(249,248,243,0) 74%),
       linear-gradient(to right, rgba(249,248,243,.62) 0%, rgba(249,248,243,0) 52%);
   }
-  .hero-copy { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding-bottom: clamp(34px, 6vh, 80px); }
+  .hero-copy { position: relative; z-index: 2; width: 100%; padding-top: clamp(100px, 14vh, 168px); padding-bottom: clamp(40px, 7vh, 88px); }
   .hero-copy .inner { max-width: var(--maxw); margin: 0 auto; padding: 0 40px; }
   .copy-block { max-width: 680px; }
   .hero .kicker { display: block; margin: 0 0 16px; }
@@ -430,9 +436,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   .hidden { display: none !important; }
 
   @media (max-width: 860px) {
-    .hero { margin-top: 0; }
-    .hero::after { display: none; }
-    .hero-copy { position: static; padding: 26px 0 8px; }
+    .hero-copy { padding-top: 92px; }
     .slide { width: clamp(220px, 78vw, 420px); }
   }
 
