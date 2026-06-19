@@ -16,10 +16,9 @@ BUILD = HERE / "_ml_build"        # resized, web-optimized intermediates
 
 # key -> source filename in assets/. Renders are downscaled to 1400px max edge.
 IMAGE_FILES = {
-    "rune_signpost": "assetrender1.png",
-    "rose_cluster": "assetrender6.png",
-    "ivy_lantern": "assetrender7.png",
-    "bee_skep": "assetrender8.png",
+    "twin_simrobot": "twin_simrobot.png",
+    "twin_conveyor": "twin_conveyor.png",
+    "twin_cell": "twin_cell.png",
 }
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
@@ -73,7 +72,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Moonlake — AI agents for game-ready 3D asset workflows</title>
+<title>Moonlake — Robotics deployment with simulation & digital twins</title>
 <link rel="icon" href="{{LOGO_DARK}}">
 <style>
   :root {
@@ -209,112 +208,71 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
   }
-  /* ---- coverflow carousel ---- */
-  .carousel { position: relative; margin-top: 20px; }
-  .viewport {
-    overflow: hidden; padding: 34px 0 38px; cursor: grab; touch-action: pan-y;
-    user-select: none; -webkit-user-select: none;
-  }
-  .viewport.dragging, .viewport.dragging .slide { cursor: grabbing; }
-  .track {
-    display: flex; align-items: center; gap: 0;
-    will-change: transform; transition: transform .62s cubic-bezier(.22,.61,.36,1);
-  }
-  /* overlapping cards: neighbours tuck behind the focused card */
-  .slide {
-    flex: 0 0 auto; width: clamp(238px, 35vw, 392px);
-    margin: 0 clamp(-72px, -5vw, -44px);
-    transform: scale(.82); z-index: 1;
-    transition: transform .62s cubic-bezier(.22,.61,.36,1);
-    cursor: grab;
-  }
-  .slide.active { transform: scale(1); z-index: 3; }
-  /* the card itself: render on top, details below */
-  .card {
-    position: relative;
-    background: var(--paper); border: 1px solid var(--hair); border-radius: 18px;
-    overflow: hidden; box-shadow: 0 10px 28px rgba(13,13,14,.10);
-    transition: box-shadow .5s ease, border-color .5s ease;
-  }
-  /* solid paper veil dims neighbours without making the card see-through */
-  .card::after {
-    content: ""; position: absolute; inset: 0; z-index: 5; pointer-events: none;
-    background: var(--paper); opacity: .58; transition: opacity .5s ease;
-  }
-  .slide.active .card { box-shadow: 0 26px 60px rgba(13,13,14,.24); border-color: var(--ink-3); }
-  .slide.active .card::after { opacity: 0; }
-  .card-media { position: relative; aspect-ratio: 1 / 1; background: var(--paper-2); }
-  .card-media img {
-    width: 100%; height: 100%; object-fit: contain; display: block;
-    -webkit-user-drag: none; user-select: none; -webkit-user-select: none;
-  }
-  .card-info { padding: 15px 17px 18px; text-align: left; }
-  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .card-name { font-size: 16px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; margin: 0; }
-  .card-tris {
-    flex: 0 0 auto; font-size: 11px; font-weight: 700; letter-spacing: .06em;
-    padding: 5px 11px; border-radius: 999px; background: var(--ink); color: var(--paper); white-space: nowrap;
-  }
-  .card-desc {
-    margin: 9px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2);
-    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  /* enlarge button — top-right corner of the focused card's image */
-  .preview-btn {
-    position: absolute; top: 10px; right: 10px; z-index: 3;
-    display: flex; align-items: center; justify-content: center;
-    width: 34px; height: 34px; padding: 0;
-    border: 1px solid var(--hair); border-radius: 50%;
-    background: rgba(249,248,243,.85); color: var(--ink); cursor: pointer;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-    opacity: 0; pointer-events: none;
-    transition: opacity .4s ease, background .2s ease, color .2s ease, border-color .2s ease;
-  }
-  .preview-btn svg { display: block; }
-  .slide.active .preview-btn { opacity: 1; pointer-events: auto; }
-  .preview-btn:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .viewport.dragging .track { transition: none; }
-  /* drag affordance */
-  .drag-hint {
-    display: flex; align-items: center; justify-content: center; gap: 12px;
-    margin-top: 14px; font-size: 11px; font-weight: 700; letter-spacing: .2em;
-    text-transform: uppercase; color: var(--ink-3); user-select: none;
-    transition: opacity .4s ease;
-  }
-  .drag-hint.hide { opacity: 0; pointer-events: none; }
-  .drag-hint .arw { font-size: 15px; line-height: 1; }
-  @keyframes nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
-  .drag-hint .arw.r { animation: nudge 1.6s ease-in-out infinite; }
-  .drag-hint .arw.l { animation: nudge 1.6s ease-in-out infinite reverse; }
-  @media (prefers-reduced-motion: reduce) { .drag-hint .arw { animation: none; } }
-  .card-media .badge {
-    position: absolute; top: 10px; left: 10px; z-index: 2;
-    font-size: 9px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
-    color: var(--ink-2); background: rgba(249,248,243,.85); padding: 4px 8px; border-radius: 999px;
-    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-    opacity: 0; transition: opacity .4s ease;
-  }
-  .slide.active .card-media .badge { opacity: 1; }
+  /* ---- credibility logo strip ---- */
+  .logos { padding: 30px 0 4px; }
+  .logos-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 18px; }
+  .logos-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 44px; list-style: none; margin: 0; padding: 0; }
+  .logos-row li { font-size: clamp(15px, 1.5vw, 21px); font-weight: 700; letter-spacing: -.01em; color: var(--ink-2); opacity: .82; }
+  @media (max-width: 640px) { .logos-row { gap: 12px 26px; } }
 
-  /* nav arrows */
-  .car-btn {
-    position: absolute; top: 50%; transform: translateY(-50%); z-index: 5;
-    width: 52px; height: 52px; border-radius: 50%; cursor: pointer;
-    background: var(--paper); border: 1px solid var(--hair); color: var(--ink);
-    font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center;
-    transition: background .2s ease, transform .2s ease, border-color .2s ease;
+  /* ---- results gallery (editorial) ---- */
+  .gallery { margin-top: 26px; }
+  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; }
+  .g-stage {
+    position: relative; margin: 0; border: 1px solid var(--hair); border-radius: 4px;
+    background: var(--paper-2); overflow: hidden; aspect-ratio: 16 / 11;
+    cursor: zoom-in; touch-action: pan-y; user-select: none; -webkit-user-select: none;
   }
-  .car-btn:hover { border-color: var(--ink-3); transform: translateY(-50%) scale(1.06); }
-  .car-btn.prev { left: 6px; } .car-btn.next { right: 6px; }
-  @media (max-width: 560px) { .car-btn { width: 42px; height: 42px; font-size: 18px; } }
-
-  /* dots */
-  .car-dots { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-  .car-dots button {
-    width: 9px; height: 9px; border-radius: 50%; padding: 0; cursor: pointer;
-    border: 1px solid var(--ink-3); background: transparent; transition: background .2s ease, transform .2s ease;
+  .g-stage img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; transition: opacity .3s ease; }
+  .g-stage.fade img { opacity: 0; }
+  .g-tag {
+    position: absolute; top: 14px; left: 14px; z-index: 2;
+    font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-2); background: rgba(249,248,243,.9); padding: 5px 10px; border-radius: 2px;
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
-  .car-dots button[aria-current="true"] { background: var(--accent); border-color: var(--accent); transform: scale(1.15); }
+  .g-zoom {
+    position: absolute; bottom: 14px; right: 14px; z-index: 2;
+    font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-2); background: rgba(249,248,243,.9); padding: 5px 10px; border-radius: 2px;
+    opacity: 0; transition: opacity .25s ease; pointer-events: none;
+  }
+  .g-stage:hover .g-zoom { opacity: 1; }
+  /* caption column */
+  .g-caption { display: flex; flex-direction: column; }
+  .g-index { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--ink-3); }
+  .g-index .g-sep { margin: 0 5px; opacity: .6; }
+  .g-caption h3 {
+    font-size: clamp(22px, 2.4vw, 30px); font-weight: 800; letter-spacing: -.03em;
+    line-height: 1.08; margin: 14px 0 0;
+  }
+  #g-desc { font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 14px 0 0; max-width: 46ch; }
+  .g-specs { margin: 22px 0 0; border-top: 1px solid var(--hair); }
+  .g-specs .row { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--hair); }
+  .g-specs .k { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); align-self: center; }
+  .g-specs .v { font-size: 14px; font-weight: 500; color: var(--ink); }
+  .g-controls { display: flex; gap: 10px; margin-top: auto; padding-top: 26px; }
+  .g-arrow {
+    width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
+    background: var(--paper); border: 1px solid var(--ink-3); color: var(--ink);
+    font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+  }
+  .g-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  /* thumbnail rail */
+  .g-rail { display: flex; gap: 12px; margin-top: 26px; }
+  .g-rail button {
+    flex: 1 1 0; padding: 0; cursor: pointer; background: var(--paper-2);
+    border: 1px solid var(--hair); border-radius: 3px; overflow: hidden;
+    aspect-ratio: 16 / 10; transition: border-color .2s ease, opacity .2s ease; opacity: .55;
+  }
+  .g-rail button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .g-rail button[aria-selected="true"] { opacity: 1; border-color: var(--ink); }
+  .g-rail button:hover { opacity: 1; }
+  @media (max-width: 820px) {
+    .g-main { grid-template-columns: 1fr; gap: 22px; }
+    .g-controls { margin-top: 22px; }
+  }
 
   /* ---- process ---- */
   .process {
@@ -460,7 +418,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Moonlake"><img src="{{LOGO_DARK}}" alt="Moonlake"></a>
     <nav>
-      <a href="#examples">Examples</a>
+      <a href="#examples">Results</a>
       <a href="#capabilities">Capabilities</a>
       <a href="#how">How it works</a>
       <a href="#pilot">Contact</a>
@@ -470,49 +428,79 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 <header class="hero" id="top">
   <div class="hero-figure">
-    <img src="{{HERO}}" alt="Wireframe 3D geometry generated by the Moonlake agent">
+    <img src="{{HERO}}" alt="Simulation-ready 3D geometry generated by Moonlake">
   </div>
   <div class="hero-copy">
     <div class="inner">
       <div class="copy-block">
-        <p class="kicker">Moonlake — Blender 3D asset agent</p>
-        <h1>AI agents for game-ready 3D asset workflows.</h1>
-        <p class="lead">Moonlake helps game teams turn environment and prop briefs into 3D asset directions, starting with stylized non-character assets for Blender-based workflows.</p>
+        <p class="kicker">Moonlake — AI infrastructure for world simulation</p>
+        <h1>Accelerating robotics deployment with simulation and digital twins.</h1>
+        <p class="lead">Moonlake helps robotics companies identify the highest-ROI factory tasks, evaluate on real-world factory data, and de-risk deployment with simulation-ready digital twins.</p>
         <div class="actions">
           <a class="btn solid" href="#pilot">Contact</a>
-          <a class="btn outline" href="#examples">View examples</a>
+          <a class="btn outline" href="#examples">See results</a>
         </div>
       </div>
     </div>
   </div>
 </header>
 
-<!-- 2. Example asset carousel -->
+<!-- credibility logo strip -->
+<section class="logos">
+  <div class="wrap">
+    <p class="logos-label">Built by talent from the world's leading AI &amp; robotics labs</p>
+    <ul class="logos-row">
+      <li>NVIDIA</li>
+      <li>DeepMind</li>
+      <li>Anthropic</li>
+      <li>Meta</li>
+      <li>Waymo</li>
+      <li>Autodesk</li>
+      <li>AWS</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 2. Customer results gallery -->
 <section class="work" id="examples">
   <div class="wrap">
     <div class="work-head">
       <div>
-        <span class="kicker">Render previews</span>
-        <h2>Example asset outputs.</h2>
+        <span class="kicker">Customer results</span>
+        <h2>What Moonlake builds for customers.</h2>
       </div>
     </div>
-    <p class="sec-sub">A selection of game-ready asset previews, each listed with its triangle count. More directions are on the way.</p>
-    <div class="carousel">
-      <div class="viewport"><div class="track" id="track"></div></div>
-      <button class="car-btn prev" id="car-prev" aria-label="Previous asset">&#8249;</button>
-      <button class="car-btn next" id="car-next" aria-label="Next asset">&#8250;</button>
-      <div class="drag-hint" id="drag-hint"><span class="arw l">&#8249;</span> Drag or swipe to browse <span class="arw r">&#8250;</span></div>
-      <div class="car-dots" id="car-dots"></div>
+    <p class="sec-sub">Sim-ready digital twins and validated environments, generated from a single customer image, video, or point cloud. Early examples shown — more on request.</p>
+
+    <div class="gallery" id="gallery">
+      <div class="g-main">
+        <figure class="g-stage" id="g-stage">
+          <span class="g-tag" id="g-tag"></span>
+          <img id="g-img" alt="" draggable="false">
+          <span class="g-zoom" aria-hidden="true">Click to enlarge</span>
+        </figure>
+        <div class="g-caption">
+          <div class="g-index"><span id="g-num">01</span> <span class="g-sep">/</span> <span id="g-total">03</span></div>
+          <h3 id="g-title"></h3>
+          <p id="g-desc"></p>
+          <dl class="g-specs" id="g-specs"></dl>
+          <div class="g-controls">
+            <button class="g-arrow" id="g-prev" aria-label="Previous result">&#8249;</button>
+            <button class="g-arrow" id="g-next" aria-label="Next result">&#8250;</button>
+          </div>
+        </div>
+      </div>
+      <div class="g-rail" id="g-rail" role="tablist" aria-label="Results"></div>
     </div>
   </div>
 </section>
 
-<!-- 3. What Moonlake generates -->
+<!-- 3. What Moonlake does -->
 <section class="caps" id="capabilities">
   <div class="wrap">
-    <span class="kicker">What Moonlake generates</span>
-    <h2>Built for game asset and world-building tasks.</h2>
-    <p class="sec-sub">Moonlake focuses on the part of game production between idea and usable 3D world: props, environment kits, terrain dressing, modular assets, and procedural asset systems.</p>
+    <span class="kicker">What Moonlake does</span>
+    <h2>Built to de-risk robotics deployment.</h2>
+    <p class="sec-sub">Moonlake is the simulation infrastructure layer between a real factory and a validated robot deployment — turning sites and assets into sim-ready digital twins, on demand and at scale.</p>
     <div class="cap-grid" id="cap-grid"></div>
   </div>
 </section>
@@ -521,17 +509,17 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="process" id="how">
   <div class="wrap">
     <span class="kicker">How it works</span>
-    <h2>From brief to editable asset direction.</h2>
-    <p class="sec-sub">Start with a natural language brief, reference image, or style target. Moonlake generates visual outputs and structured asset concepts that can be refined toward Blender-based game production workflows.</p>
+    <h2>From one image to a validated digital twin.</h2>
+    <p class="sec-sub">Moonlake's AI simulation engineer produces a fully, physically validated simulation from a single image, video, or point cloud.</p>
     <div class="steps" id="steps"></div>
   </div>
 </section>
 
-<!-- 5. Studio use cases -->
+<!-- 5. Where it fits -->
 <section class="usecases" id="usecases">
   <div class="wrap">
-    <span class="kicker">Studio use cases</span>
-    <h2>For small teams building more world than they have time for.</h2>
+    <span class="kicker">Where it fits</span>
+    <h2>For robotics teams shipping into real factories.</h2>
     <div class="uc-grid" id="uc-grid"></div>
   </div>
 </section>
@@ -540,8 +528,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="cta" id="pilot">
   <div class="wrap">
     <img src="{{LOGO_LIGHT}}" alt="Moonlake">
-    <h2>Try Moonlake for your<br>asset workflow.</h2>
-    <p>We're working with game teams to evaluate real environment and asset-generation tasks. Bring us a brief, reference, or workflow bottleneck, and we'll explore how Moonlake can help.</p>
+    <h2>See Moonlake on your<br>factory floor.</h2>
+    <p>We're working with robotics companies and OEMs to de-risk deployments. Share a site, asset, or task and we'll show how Moonlake turns it into a validated, sim-ready digital twin.</p>
     <form class="cta-form" id="contact-form">
       <div class="row">
         <div class="cta-field">
@@ -549,7 +537,7 @@ TEMPLATE = r"""<!DOCTYPE html>
           <input id="cf-name" name="name" type="text" autocomplete="name" required>
         </div>
         <div class="cta-field">
-          <label for="cf-company">Studio / company</label>
+          <label for="cf-company">Company</label>
           <input id="cf-company" name="company" type="text" autocomplete="organization">
         </div>
       </div>
@@ -558,19 +546,19 @@ TEMPLATE = r"""<!DOCTYPE html>
         <input id="cf-email" name="email" type="email" autocomplete="email" required>
       </div>
       <div class="cta-field">
-        <label for="cf-msg">What are you working on?</label>
-        <textarea id="cf-msg" name="message" placeholder="Tell us about the asset or environment workflow you'd like to test."></textarea>
+        <label for="cf-msg">What are you deploying?</label>
+        <textarea id="cf-msg" name="message" placeholder="Tell us about the deployment, site, or task you'd like to simulate."></textarea>
       </div>
       <button class="btn" type="submit">Send message</button>
       <p class="cta-note" id="cf-note" role="status"></p>
     </form>
-    <p class="cta-fine">Best fit for teams working on props, environment assets, modular kits, terrain dressing, or procedural world-building workflows.</p>
+    <p class="cta-fine">Best fit for robotics companies, OEMs, and manufacturers evaluating automation on real factory data.</p>
   </div>
 </section>
 
 
 <footer><div class="wrap foot">
-  <span>© 2026 Moonlake — AI agents for 3D game asset workflows.</span>
+  <span>© 2026 Moonlake — Simulation infrastructure for robotics deployment.</span>
   <span><a href="https://moonlakeai.com">moonlakeai.com</a></span>
 </div></footer>
 
@@ -594,75 +582,62 @@ const IMAGES = {
 
 /* ============================================================
    CONFIG — data-driven content.
-   `assets` drives the carousel; each entry is one render preview,
-   listed with its triangle count.
+   `assets` drives the results gallery; each entry is one customer
+   output, with its input, physics engine, and output type.
    ============================================================ */
 const assets = [
   {
-    img: "rune_signpost",
-    name: "Runed Wayfinding Signpost",
-    desc: "A weathered wooden signpost with stacked directional planks, hand-carved runes, and faint glowing glyphs, set into a mossy rock-and-root base.",
-    brief: "Fantasy wooden signpost: several pointing plank signs with carved runic lettering and subtle glowing glyphs, on a worn post anchored in a mossy rock base with exposed roots.",
-    use: "Fantasy RPG wayfinding / crossroads marker / forest or village path set dressing",
-    style: "Stylized realism, weathered wood, fantasy, hand-painted detail",
-    tris: "13k",
-    status: "Preview",
+    img: "twin_simrobot",
+    name: "Articulated manipulation twin",
+    desc: "A customer appliance and robot arm reconstructed as a physically validated scene and calibrated in NVIDIA Newton — ready for manipulation-policy testing before anything touches the floor.",
+    input: "Single product image",
+    engine: "NVIDIA Newton",
+    output: "Articulated, sim-ready twin",
+    status: "Sim output",
   },
   {
-    img: "rose_cluster",
-    name: "Blooming Rose Cluster",
-    desc: "A soft cluster of dusty-pink roses nestled in pale sage leaves, forming a low rounded bush.",
-    brief: "Stylized rose bush: dome of clustered pink roses with sculpted petals and muted green foliage; cozy, hand-painted finish.",
-    use: "Cozy sim / garden biome / fairy-tale set dressing / Roblox decoration",
-    style: "Chibi, cozy, pastel, soft stylized florals",
-    tris: "9k",
-    status: "Preview",
+    img: "twin_conveyor",
+    name: "Modular conveyor line",
+    desc: "A conveyor system rebuilt as a configurable, re-usable 3D asset with inferred structure — drop-in ready for line layouts and throughput simulation.",
+    input: "Reference image",
+    engine: "Isaac Sim / Newton",
+    output: "Procedural, editable asset",
+    status: "Sim output",
   },
   {
-    img: "ivy_lantern",
-    name: "Ivy Shepherd's Lantern",
-    desc: "An ornate cream lantern hanging from a curved wrought-iron shepherd's hook wrapped in trailing ivy.",
-    brief: "Hanging garden lantern: cream filigree lantern on a curved metal shepherd's-hook pole with climbing ivy leaves; soft fantasy garden detail.",
-    use: "Cozy RPG path / garden biome / fairy-village lighting prop",
-    style: "Chibi, cozy fantasy, pastel, soft stylized",
-    tris: "9k",
-    status: "Preview",
-  },
-  {
-    img: "bee_skep",
-    name: "Honeybee Skep Hive",
-    desc: "A rounded woven bee skep with dripping honey, a small entrance hole, and bees buzzing around clusters of tiny flowers.",
-    brief: "Stylized bee skep: stacked coiled-straw dome with honey drips, a round entrance, scattered bees, and small dried flowers; warm cozy palette.",
-    use: "Cozy sim / farming game / meadow biome / Roblox apiary prop",
-    style: "Chibi, cozy, warm pastel, soft stylized nature",
-    tris: "9k",
-    status: "Preview",
+    img: "twin_cell",
+    name: "Pick-and-place work cell",
+    desc: "A full pick-and-place cell — robot, pallets, and racking — reconstructed and calibrated so policies can be validated against real-world factory data before deployment.",
+    input: "Factory video / point cloud",
+    engine: "NVIDIA Isaac Sim",
+    output: "Validated work-cell twin",
+    status: "Sim output",
   },
 ];
 
 const capabilities = [
-  { t: "Props & environment assets", d: "Standalone set pieces and background props for dressing scenes." },
-  { t: "Modular kits", d: "Tileable, snap-together pieces for building out larger structures." },
-  { t: "Style-consistent variants", d: "Multiple takes on an asset that hold a single visual language." },
-  { t: "Terrain dressing assets", d: "Rocks, foliage, and scatter detail for grounding environments." },
-  { t: "Procedural scatter systems", d: "Rules for distributing assets across a scene at world scale." },
-  { t: "Blender-first workflows", d: "Outputs aimed at Blender-based pipelines and DCC handoff." },
+  { t: "Digital twins from a single input", d: "Turn one image, video, or point cloud into a sim-ready 3D twin of a space or asset." },
+  { t: "Articulation & physics inference", d: "Automatically infer joints, articulation, and physical properties for manipulable assets." },
+  { t: "Physics-engine calibration", d: "Autonomously calibrate twins in NVIDIA Isaac, Newton, and MuJoCo." },
+  { t: "Highest-ROI task identification", d: "Pinpoint the factory tasks where automation returns the most, fastest." },
+  { t: "Evaluate on real factory data", d: "Validate robot policies against real-world factory data before deployment." },
+  { t: "Procedural & re-usable", d: "Everything is generated procedurally — configurable, editable, and re-usable." },
 ];
 
 const pipeline = [
-  { h: "Describe the asset or workflow", p: "Start from a natural-language brief, a reference image, or a style target." },
-  { h: "Generate asset directions", p: "Moonlake returns visual outputs and structured asset concepts to react to." },
-  { h: "Iterate with constraints", p: "Refine against production constraints — style, scope and direction." },
-  { h: "Move toward production", p: "Carry the chosen direction toward Blender-based game production." },
+  { h: "Single customer input", p: "Start from one image, video, or point cloud of the real asset or space." },
+  { h: "Auto-build in 3D", p: "Moonlake reconstructs the scene and infers articulation and physics — like a technical artist building sim-ready assets." },
+  { h: "Calibrate in a physics engine", p: "The agent autonomously calibrates the twin in the cloud across Isaac, Newton, and MuJoCo." },
+  { h: "Validated, editable output", p: "A physically validated, sim-ready digital twin you can adjust procedurally and re-use." },
 ];
 
 const useCases = [
-  "Indie teams prototyping environments",
-  "Roblox studios producing themed worlds",
-  "Technical artists generating prop variants",
-  "Environment artists exploring style directions",
-  "Small teams building vertical slices",
-  "Teams experimenting with procedural world-building workflows",
+  "Robotics companies de-risking new deployments",
+  "Validating manipulation policies before install",
+  "Identifying the highest-ROI tasks to automate",
+  "Turning brownfield factories into twins — no redesign",
+  "Evaluating robots on real-world factory data",
+  "Cutting deployment time, downtime, and labor cost",
 ];
 
 /* ============================================================
@@ -670,118 +645,65 @@ const useCases = [
    ============================================================ */
 const $ = (s) => document.querySelector(s);
 
-/* ---- coverflow carousel ---- */
-const track = $("#track");
-const dotsWrap = $("#car-dots");
+/* ---- results gallery (editorial) ---- */
+const gImg = $("#g-img");
+const gStage = $("#g-stage");
+const gRail = $("#g-rail");
 let active = 0;
-let slides = [];
-let dots = [];
 
-function currentTX() {
-  // translate the track so the active slide sits in the middle of the viewport
-  const vw = track.parentElement.clientWidth;
-  const s = slides[active];
-  return -(s.offsetLeft + s.offsetWidth / 2 - vw / 2);
-}
-function center() { track.style.transform = `translateX(${currentTX()}px)`; }
-
-function go(i) {
-  active = (i + slides.length) % slides.length;
-  slides.forEach((s, k) => {
-    s.classList.toggle("active", k === active);
-    s.style.zIndex = String(slides.length - Math.abs(k - active)); // focused card on top, neighbours tuck behind symmetrically
-  });
-  dots.forEach((d, k) => d.setAttribute("aria-current", k === active));
-  center();
+function renderGallery(i) {
+  active = (i + assets.length) % assets.length;
+  const a = assets[active];
+  gImg.src = IMAGES[a.img];
+  gImg.alt = a.name + " — simulation output";
+  $("#g-tag").textContent = a.status;
+  $("#g-num").textContent = String(active + 1).padStart(2, "0");
+  $("#g-total").textContent = String(assets.length).padStart(2, "0");
+  $("#g-title").textContent = a.name;
+  $("#g-desc").textContent = a.desc;
+  $("#g-specs").innerHTML = [
+    ["Input", a.input],
+    ["Physics engine", a.engine],
+    ["Output", a.output],
+  ].map(([k, v]) => `<div class="row"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  [...gRail.children].forEach((b, k) => b.setAttribute("aria-selected", k === active));
 }
 
-let dragMoved = false;
-track.addEventListener("click", (e) => {
-  if (dragMoved) { dragMoved = false; return; }   // ignore the click that ends a drag
-  if (e.target.closest(".preview-btn")) { openLb(active); return; }  // Enlarge button
-  const s = e.target.closest(".slide");
-  if (!s) return;
-  const i = +s.dataset.index;
-  if (i !== active) go(i);   // side slide -> focus (use the Enlarge button to zoom the active one)
-});
-dotsWrap.addEventListener("click", (e) => {
-  const b = e.target.closest("button");
-  if (b) go(+b.dataset.index);
-});
-$("#car-prev").addEventListener("click", () => go(active - 1));
-$("#car-next").addEventListener("click", () => go(active + 1));
+function goTo(i) {
+  gStage.classList.add("fade");
+  setTimeout(() => { renderGallery(i); gStage.classList.remove("fade"); }, 170);
+}
 
-/* ---- drag / swipe to browse ---- */
-const viewport = track.parentElement;
-const dragHint = $("#drag-hint");
-let dragging = false, startX = 0, dragDX = 0, baseTX = 0;
+/* thumbnail rail */
+gRail.innerHTML = assets.map((a, i) =>
+  `<button role="tab" data-index="${i}" aria-selected="${i === 0}" aria-label="${a.name}"><img src="${IMAGES[a.img]}" alt="" draggable="false"></button>`).join("");
+gRail.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (b) goTo(+b.dataset.index);
+});
+$("#g-prev").addEventListener("click", () => goTo(active - 1));
+$("#g-next").addEventListener("click", () => goTo(active + 1));
 
-viewport.addEventListener("pointerdown", (e) => {
-  if (e.target.closest(".preview-btn")) return;   // let the enlarge button receive its click
-  if (slides.length < 2) return;
-  dragging = true; dragMoved = false;
-  startX = e.clientX; dragDX = 0; baseTX = currentTX();
-  viewport.classList.add("dragging");
-  viewport.setPointerCapture(e.pointerId);
-  if (dragHint) dragHint.classList.add("hide");
+/* drag / swipe on the stage; click (no drag) enlarges */
+let dragging = false, dragMoved = false, startX = 0;
+gStage.addEventListener("pointerdown", (e) => {
+  dragging = true; dragMoved = false; startX = e.clientX;
+  try { gStage.setPointerCapture(e.pointerId); } catch (err) {}
 });
-viewport.addEventListener("pointermove", (e) => {
-  if (!dragging) return;
-  dragDX = e.clientX - startX;
-  if (Math.abs(dragDX) > 6) dragMoved = true;
-  track.style.transform = `translateX(${baseTX + dragDX}px)`;
+gStage.addEventListener("pointermove", (e) => {
+  if (dragging && Math.abs(e.clientX - startX) > 8) dragMoved = true;
 });
-function endDrag(e) {
+function endStageDrag(e) {
   if (!dragging) return;
   dragging = false;
-  viewport.classList.remove("dragging");
-  if (dragMoved) {
-    const threshold = Math.min(220, viewport.clientWidth * 0.22);
-    if (dragDX <= -threshold) go(active + 1);
-    else if (dragDX >= threshold) go(active - 1);
-    else center();   // snap back to current slide
-  } else {
-    // a tap (no drag) — jump to whichever card was clicked
-    const el = e ? document.elementFromPoint(e.clientX, e.clientY) : null;
-    const s = el && el.closest(".slide");
-    if (s) { const i = +s.dataset.index; if (i !== active) go(i); else center(); }
-    else center();
-  }
-  dragDX = 0;
+  const dx = (e ? e.clientX : startX) - startX;
+  if (dx <= -50) goTo(active + 1);
+  else if (dx >= 50) goTo(active - 1);
 }
-viewport.addEventListener("pointerup", endDrag);
-viewport.addEventListener("pointercancel", endDrag);
+gStage.addEventListener("pointerup", endStageDrag);
+gStage.addEventListener("pointercancel", endStageDrag);
+gStage.addEventListener("click", () => { if (!dragMoved) openLb(active); });
 
-function buildCarousel() {
-  track.innerHTML = assets.map((a, i) => `
-    <div class="slide${i === 0 ? " active" : ""}" data-index="${i}">
-      <div class="card">
-        <div class="card-media">
-          <span class="badge">${a.status}</span>
-          <button class="preview-btn" type="button" aria-label="Enlarge ${a.name}"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="20" y1="20" x2="16.65" y2="16.65"></line></svg></button>
-          <img src="${IMAGES[a.img]}" alt="${a.name} — render preview" loading="lazy" draggable="false">
-        </div>
-        <div class="card-info">
-          <div class="card-head">
-            <h4 class="card-name">${a.name}</h4>
-            <span class="card-tris">${a.tris} tris</span>
-          </div>
-          <p class="card-desc">${a.desc}</p>
-        </div>
-      </div>
-    </div>`).join("");
-  dotsWrap.innerHTML = assets
-    .map((_, i) => `<button data-index="${i}" aria-current="${i === 0}" aria-label="Asset ${i + 1}"></button>`).join("");
-  slides = [...track.querySelectorAll(".slide")];
-  dots = [...dotsWrap.querySelectorAll("button")];
-  const hint = $("#drag-hint");
-  if (hint) hint.classList.toggle("hide", slides.length < 2);
-  go(0);
-}
-
-buildCarousel();
-window.addEventListener("load", center);
-window.addEventListener("resize", center);
+renderGallery(0);
 
 $("#cap-grid").innerHTML = capabilities
   .map((c) => `<div class="cap-item"><h4>${c.t}</h4><p>${c.d}</p></div>`).join("");
@@ -838,7 +760,7 @@ function openLb(i) {
   $("#lb-img").src = IMAGES[a.img];
   $("#lb-img").alt = a.name;
   $("#lb-title").textContent = a.name;
-  $("#lb-sub").textContent = `${a.status} · ${a.tris} tris · ${a.style}`;
+  $("#lb-sub").textContent = `${a.status} · ${a.engine} · ${a.output}`;
   lb.classList.add("open");
   lb.setAttribute("aria-hidden", "false");
 }
@@ -846,7 +768,7 @@ function closeLb() { lb.classList.remove("open"); lb.setAttribute("aria-hidden",
 function step(d) {
   const n = assets.length;
   const next = (current + d + n) % n;
-  go(next);          // keep the carousel in sync with the lightbox
+  renderGallery(next);   // keep the gallery in sync with the lightbox
   openLb(next);
 }
 $("#lb-close").addEventListener("click", closeLb);
