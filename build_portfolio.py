@@ -723,7 +723,7 @@ const assets = [
   {
     single: "assets/s7_sidebyside.mp4",
     name: "Reconstructed work cell",
-    desc: "A robotic work cell rebuilt from a single capture. Layered point clouds reconstruct every object as an articulated, slider-controlled twin, exported to Isaac Sim. Input left, output right.",
+    desc: "A robotic work cell reconstructed from a single capture into an articulated sim twin in Isaac Sim. Input left, output right.",
     source: "Image / video capture",
     engine: "Isaac Sim / Blender",
     output: "Articulated scene twin",
