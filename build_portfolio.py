@@ -536,7 +536,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         <h1>Accelerated pipelines for simulation, digital twins, and robotics.</h1>
         <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. OEMs use them to demo robots in customer spaces and validate deployments before install.</p>
         <div class="actions">
-          <a class="btn solid" href="#examples">Assets and Scenes</a>
+          <a class="btn solid" href="mailto:studios@moonlake.ai?subject=Demo%20request">Book a Demo</a>
           <a class="btn outline" href="#how">How it works</a>
         </div>
       </div>
@@ -696,7 +696,7 @@ const assets = [
 const pipeline = [
   { h: "You send a source", p: "An image, video, point cloud, or sensor data of the real asset or space." },
   { h: "We build it in 3D", p: "Reconstructed into 3D with inferred articulation and physics." },
-  { h: "We calibrate & validate", p: "Calibrated and physically validated in Isaac, Newton, or MuJoCo." },
+  { h: "We calibrate & QA", p: "Our engineers hand-check and physically validate every asset in Isaac, Newton, or MuJoCo." },
   { h: "You receive deliverables", p: "Sim-ready assets, scenes, and blend files for demos, validation, and deployment prep." },
 ];
 
