@@ -347,31 +347,33 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
     letter-spacing: -.035em; margin: 0 0 46px; max-width: 18ch; line-height: 1.02;
   }
-  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .timeline { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); }
+  /* one full-width rail from the first node centre to the last */
+  .timeline::before {
+    content: ""; position: absolute; top: 13px; left: 12.5%; right: 12.5%; height: 2px;
+    background: var(--hair); z-index: 0;
+  }
   .tl-step {
-    position: relative; padding: 48px 26px 0 0;
+    position: relative; padding: 46px 14px 0; text-align: center;
     opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease;
   }
   .tl-step.in { opacity: 1; transform: none; }
-  .tl-step::after {
-    content: ""; position: absolute; top: 18px; left: 14px; width: 100%; height: 2px;
-    background: var(--hair); z-index: 0;
-  }
-  .tl-step:last-child::after { display: none; }
   .tl-node {
-    position: absolute; top: 4px; left: 0; z-index: 1;
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%); z-index: 1;
     width: 28px; height: 28px; border-radius: 50%;
     background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700;
     display: flex; align-items: center; justify-content: center;
   }
-  .tl-step h4 { font-size: 17px; font-weight: 800; letter-spacing: -.02em; margin: 0 0 8px; }
-  .tl-step p { font-weight: 400; color: var(--ink-2); font-size: 14px; margin: 0; line-height: 1.5; }
+  .tl-step h4 { font-size: 16px; font-weight: 800; letter-spacing: -.02em; margin: 0 0 7px; }
+  .tl-step p { font-weight: 400; color: var(--ink-2); font-size: 13px; margin: 0 auto; line-height: 1.5; max-width: 26ch; }
   @media (max-width: 760px) {
     .timeline { grid-template-columns: 1fr; }
-    .tl-step { padding: 0 0 32px 46px; }
+    .timeline::before { display: none; }
+    .tl-step { padding: 0 0 30px 46px; text-align: left; }
     .tl-step:last-child { padding-bottom: 0; }
-    .tl-node { top: 0; }
-    .tl-step::after { top: 28px; left: 13px; width: 2px; height: calc(100% - 28px); }
+    .tl-node { left: 0; transform: none; }
+    .tl-step::after { content: ""; position: absolute; top: 28px; left: 13px; width: 2px; height: calc(100% - 28px); background: var(--hair); }
+    .tl-step:last-child::after { display: none; }
   }
 
 
@@ -413,17 +415,26 @@ TEMPLATE = r"""<!DOCTYPE html>
   .foot a:hover { color: var(--ink-2); }
 
   /* ---- capabilities ---- */
-  .caps { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 80px 0 44px; }
-  .caps .kicker { display: block; margin-bottom: 12px; }
+  .caps { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 48px 0 40px; }
+  @media (min-width: 821px) and (max-height: 820px) { .caps { justify-content: flex-start; } }
+  .caps .kicker { display: block; margin-bottom: 10px; }
   .caps h2 {
-    font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
-    letter-spacing: -.035em; margin: 0; max-width: 22ch; line-height: 1.02;
+    font-size: clamp(26px, 3vw, 38px); font-weight: 800;
+    letter-spacing: -.035em; margin: 0; max-width: 22ch; line-height: 1.04;
   }
-  /* spec rows: accepts / delivers / capabilities */
-  .spec { margin-top: 26px; border-top: 1px solid var(--hair); }
+  /* metrics (claims, to validate) */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 22px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
+  .stat { padding: 16px 28px 16px 0; }
+  .stat + .stat { border-left: 1px solid var(--hair); padding-left: 28px; }
+  .stat-num { font-size: clamp(26px, 3vw, 40px); font-weight: 700; letter-spacing: -.03em; line-height: 1; white-space: nowrap; }
+  .stat-num .stat-to { color: var(--ink-3); font-weight: 500; margin: 0 2px; }
+  .stat-lbl { margin-top: 7px; font-size: 13px; color: var(--ink-2); line-height: 1.35; }
+  @media (max-width: 680px) { .stats { grid-template-columns: 1fr; } .stat { padding: 14px 0; } .stat + .stat { border-left: 0; border-top: 1px solid var(--hair); padding-left: 0; } }
+  /* spec rows */
+  .spec { margin-top: 18px; border-top: 1px solid var(--hair); }
   .spec-row {
-    display: grid; grid-template-columns: 220px 1fr; gap: 14px 40px;
-    padding: 17px 0; border-bottom: 1px solid var(--hair); align-items: start;
+    display: grid; grid-template-columns: 200px 1fr; gap: 12px 40px;
+    padding: 13px 0; border-bottom: 1px solid var(--hair); align-items: start;
   }
   .spec-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); padding-top: 5px; }
   .spec-val { font-size: clamp(16px, 1.6vw, 20px); font-weight: 500; letter-spacing: -.01em; color: var(--ink); line-height: 1.5; }
@@ -431,13 +442,13 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 680px) { .spec-row { grid-template-columns: 1fr; gap: 6px; padding: 20px 0; } .spec-label { padding-top: 0; } }
 
   /* ---- use cases (within capabilities) ---- */
-  .uc-block { margin-top: 28px; }
+  .uc-block { margin-top: 18px; }
   .uc-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
   .uc-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; border-top: 1px solid var(--hair); }
   .uc {
     display: flex; gap: 14px; align-items: flex-start;
-    padding: 15px 0; border-bottom: 1px solid var(--hair);
-    font-weight: 600; font-size: clamp(15px, 1.5vw, 18px); letter-spacing: -.01em;
+    padding: 11px 0; border-bottom: 1px solid var(--hair);
+    font-weight: 600; font-size: clamp(14px, 1.4vw, 17px); letter-spacing: -.01em;
   }
   .uc::before {
     content: ""; flex: 0 0 auto; width: 7px; height: 7px; border-radius: 50%;
@@ -505,7 +516,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         <h1>Simulation &amp; digital twins for robotics OEMs.</h1>
         <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. OEMs use them to demo robots in customer spaces and validate deployments before install.</p>
         <div class="actions">
-          <a class="btn solid" href="#examples">See the lookbook</a>
+          <a class="btn solid" href="#examples">Assets and Scenes</a>
           <a class="btn outline" href="#how">How it works</a>
         </div>
       </div>
@@ -571,19 +582,24 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="caps" id="capabilities">
   <div class="wrap">
     <span class="kicker">Capabilities</span>
-    <h2>What Moonlake does.</h2>
+    <h2>From inputs to validated twins.</h2>
+    <div class="stats">
+      <div class="stat"><div class="stat-num">20%</div><div class="stat-lbl">less deployment time</div></div>
+      <div class="stat"><div class="stat-num">100h <span class="stat-to">&rarr;</span> 20h</div><div class="stat-lbl">for detailed asset creation</div></div>
+      <div class="stat"><div class="stat-num">60%</div><div class="stat-lbl">automated with internal tooling</div></div>
+    </div>
     <div class="spec">
       <div class="spec-row">
-        <div class="spec-label">Accepts</div>
+        <div class="spec-label">Inputs</div>
         <div class="spec-val">Images<span class="dot">&middot;</span>Video<span class="dot">&middot;</span>Point clouds<span class="dot">&middot;</span>Sensor data</div>
       </div>
       <div class="spec-row">
-        <div class="spec-label">Delivers</div>
+        <div class="spec-label">Outputs</div>
         <div class="spec-val">Sim-ready assets &amp; scenes<span class="dot">&middot;</span>Articulated, physics-validated twins<span class="dot">&middot;</span>.blend &amp; USD files</div>
       </div>
       <div class="spec-row">
-        <div class="spec-label">Under the hood</div>
-        <div class="spec-val">Digital twins of customer spaces<span class="dot">&middot;</span>Articulation &amp; physics inference<span class="dot">&middot;</span>Validated in NVIDIA Isaac, Newton &amp; MuJoCo</div>
+        <div class="spec-label">Engines</div>
+        <div class="spec-val">NVIDIA Isaac<span class="dot">&middot;</span>Newton<span class="dot">&middot;</span>MuJoCo<span class="dot">&middot;</span>Unreal</div>
       </div>
     </div>
     <div class="uc-block">
@@ -670,7 +686,7 @@ const useCases = [
   "Internal and customer-facing digital twins",
   "Faster deployment prep and asset creation",
   "Validating manipulation policies before install",
-  "Connected to manufacturers & factories worldwide",
+  "Access to manufacturers & factories worldwide",
 ];
 
 /* ============================================================
