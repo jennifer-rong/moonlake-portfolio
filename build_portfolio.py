@@ -55,6 +55,49 @@ def data_uri(path: pathlib.Path) -> str:
     return f"data:image/png;base64,{b64(path)}"
 
 
+# Web font: FK Grotesk SemiMono, embedded as base64 woff2 (weight -> file)
+FONT_WEIGHTS = [
+    ("400", "FKGroteskSemiMono-Regular.woff2"),
+    ("500", "FKGroteskSemiMono-Medium.woff2"),
+    ("700", "FKGroteskSemiMono-Bold.woff2"),
+]
+
+# Credibility strip: (display name, simple-icons slug or None for name-only)
+LOGO_ROW = [
+    ("NVIDIA", "nvidia"),
+    ("DeepMind", None),
+    ("Anthropic", "anthropic"),
+    ("Stanford", None),
+    ("Meta", "meta"),
+    ("Waymo", None),
+    ("Autodesk", "autodesk"),
+    ("AWS", "aws"),
+]
+
+
+def build_font_faces() -> str:
+    faces = []
+    for weight, fname in FONT_WEIGHTS:
+        b = base64.b64encode((ASSETS / "fonts" / fname).read_bytes()).decode("ascii")
+        faces.append(
+            "@font-face{font-family:'FK Grotesk SemiMono';font-style:normal;"
+            f"font-weight:{weight};font-display:swap;"
+            f"src:url(data:font/woff2;base64,{b}) format('woff2');}}"
+        )
+    return "\n".join(faces)
+
+
+def build_logos() -> str:
+    items = []
+    for name, slug in LOGO_ROW:
+        ic = ""
+        if slug:
+            svg = (ASSETS / "logos" / f"{slug}.svg").read_text(encoding="utf-8")
+            ic = f'<span class="logo-ic" aria-hidden="true">{svg}</span>'
+        items.append(f'<li>{ic}<span class="logo-tx">{name}</span></li>')
+    return "".join(items)
+
+
 def main() -> None:
     prepare()
     images = {key: data_uri(BUILD / fname) for key, fname in IMAGE_FILES.items()}
@@ -62,6 +105,8 @@ def main() -> None:
     html = (
         TEMPLATE
         .replace("/*__IMAGES__*/", image_js)
+        .replace("/*__FONTS__*/", build_font_faces())
+        .replace("<!--__LOGOS__-->", build_logos())
         .replace("{{LOGO_DARK}}", data_uri(BUILD / "logo_dark.png"))
         .replace("{{LOGO_LIGHT}}", data_uri(BUILD / "logo_light.png"))
         .replace("{{HERO}}", data_uri(BUILD / "hero.png"))
@@ -81,6 +126,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <title>Moonlake | Robotics simulation & digital twins</title>
 <link rel="icon" type="image/png" href="{{FAVICON}}">
 <style>
+  /*__FONTS__*/
   :root {
     --paper: #f9f8f3;        /* matched exactly to the hero image background */
     --paper-2: #f1f0e9;
@@ -98,7 +144,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     margin: 0;
     background: var(--paper);
     color: var(--ink);
-    font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
+    font-family: "FK Grotesk SemiMono", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif;
     font-size: 17px; line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: "kern" 1;
@@ -215,11 +261,17 @@ TEMPLATE = r"""<!DOCTYPE html>
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
   }
   /* ---- credibility logo strip ---- */
-  .logos { padding: 30px 0 4px; }
-  .logos-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 18px; }
-  .logos-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 44px; list-style: none; margin: 0; padding: 0; }
-  .logos-row li { font-size: clamp(15px, 1.5vw, 21px); font-weight: 700; letter-spacing: -.01em; color: var(--ink-2); opacity: .82; }
-  @media (max-width: 640px) { .logos-row { gap: 12px 26px; } }
+  .logos { padding: 32px 0 6px; }
+  .logos-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 20px; }
+  .logos-row {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 18px 24px; list-style: none; margin: 0; padding: 0; width: 100%;
+  }
+  .logos-row li { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-2); opacity: .85; }
+  .logo-ic { display: inline-flex; }
+  .logo-ic svg { height: 19px; width: auto; fill: currentColor; display: block; }
+  .logo-tx { font-size: clamp(14px, 1.4vw, 19px); font-weight: 700; letter-spacing: -.01em; }
+  @media (max-width: 760px) { .logos-row { justify-content: flex-start; gap: 14px 22px; } .logo-ic svg { height: 17px; } }
 
   /* ---- results gallery (editorial) ---- */
   .gallery { margin-top: 26px; }
@@ -474,16 +526,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="logos">
   <div class="wrap">
     <p class="logos-label">Built by researchers &amp; engineers from</p>
-    <ul class="logos-row">
-      <li>NVIDIA</li>
-      <li>DeepMind</li>
-      <li>Anthropic</li>
-      <li>Stanford</li>
-      <li>Meta</li>
-      <li>Waymo</li>
-      <li>Autodesk</li>
-      <li>AWS</li>
-    </ul>
+    <ul class="logos-row"><!--__LOGOS__--></ul>
   </div>
 </section>
 
