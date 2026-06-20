@@ -95,7 +95,12 @@ def build_logos() -> str:
             svg = (ASSETS / "logos" / f"{slug}.svg").read_text(encoding="utf-8")
             ic = f'<span class="logo-ic" aria-hidden="true">{svg}</span>'
         items.append(f'<li>{ic}<span class="logo-tx">{name}</span></li>')
-    return "".join(items)
+    one = "".join(items)
+    # two identical copies -> seamless horizontal marquee (CSS animates -50%)
+    return (
+        f'<ul class="logos-row">{one}</ul>'
+        f'<ul class="logos-row" aria-hidden="true">{one}</ul>'
+    )
 
 
 def main() -> None:
@@ -251,7 +256,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   }
 
   /* ---- section heads ---- */
-  .work { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; padding: 64px 0 22px; }
+  .work { min-height: calc(100vh - 90px); min-height: calc(100svh - 90px); display: flex; flex-direction: column; padding: 28px 0 26px; }
+  .work > .wrap { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
   .work-head {
     display: flex; justify-content: space-between; align-items: flex-end;
     gap: 28px; flex-wrap: wrap; margin-bottom: 8px;
@@ -260,22 +266,28 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
   }
-  /* ---- credibility logo strip ---- */
-  .logos { padding: 32px 0 6px; }
-  .logos-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 20px; }
-  .logos-row {
-    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    gap: 18px 24px; list-style: none; margin: 0; padding: 0; width: 100%;
+  /* ---- credibility logo marquee ---- */
+  .logos { padding: 28px 0 0; }
+  .logos-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 18px; }
+  .marquee {
+    position: relative; overflow: hidden; width: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 9%, #000 91%, transparent 100%);
   }
-  .logos-row li { display: inline-flex; align-items: center; gap: 9px; color: var(--ink-2); opacity: .85; }
+  .marquee-track { display: flex; width: max-content; animation: logos-scroll 42s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .logos-row { display: flex; align-items: center; gap: 68px; padding-right: 68px; list-style: none; margin: 0; }
+  .logos-row li { display: inline-flex; align-items: center; gap: 13px; color: var(--ink-2); opacity: .9; flex: 0 0 auto; }
   .logo-ic { display: inline-flex; }
-  .logo-ic svg { height: 19px; width: auto; fill: currentColor; display: block; }
-  .logo-tx { font-size: clamp(14px, 1.4vw, 19px); font-weight: 700; letter-spacing: -.01em; }
-  @media (max-width: 760px) { .logos-row { justify-content: flex-start; gap: 14px 22px; } .logo-ic svg { height: 17px; } }
+  .logo-ic svg { height: 30px; width: auto; fill: currentColor; display: block; }
+  .logo-tx { font-size: clamp(20px, 2.2vw, 30px); font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+  @keyframes logos-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+  @media (max-width: 760px) { .logo-ic svg { height: 24px; } .logos-row { gap: 48px; padding-right: 48px; } }
 
   /* ---- results gallery (editorial) ---- */
-  .gallery { margin-top: 10px; flex: 1 1 0; min-height: 0; }
-  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; height: 100%; }
+  .gallery { margin-top: 12px; flex: 1 1 0; min-height: 0; }
+  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; grid-template-rows: 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; height: 100%; }
   .g-stage {
     position: relative; margin: 0; border: 1px solid var(--hair); border-radius: 4px;
     background: var(--paper-2); overflow: hidden; min-height: 0;
@@ -331,8 +343,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   .g-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   @media (max-width: 820px) {
     .work { min-height: auto; display: block; padding: 96px 0 40px; }
+    .work > .wrap { display: block; }
     .gallery { flex: none; }
-    .g-main { grid-template-columns: 1fr; gap: 22px; height: auto; }
+    .g-main { grid-template-columns: 1fr; grid-template-rows: auto; gap: 22px; height: auto; }
     .g-stage { aspect-ratio: 16 / 11; }
     .g-controls { margin-top: 22px; }
   }
@@ -527,9 +540,9 @@ TEMPLATE = r"""<!DOCTYPE html>
 <!-- credibility logo strip -->
 <section class="logos">
   <div class="wrap">
-    <p class="logos-label">Built by researchers &amp; engineers from</p>
-    <ul class="logos-row"><!--__LOGOS__--></ul>
+    <p class="logos-label">Researchers &amp; engineers from</p>
   </div>
+  <div class="marquee"><div class="marquee-track"><!--__LOGOS__--></div></div>
 </section>
 
 <!-- 2. Lookbook -->
