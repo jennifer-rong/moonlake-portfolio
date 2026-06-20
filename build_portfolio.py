@@ -292,30 +292,42 @@ TEMPLATE = r"""<!DOCTYPE html>
     .g-controls { margin-top: 22px; }
   }
 
-  /* ---- process ---- */
+  /* ---- process timeline ---- */
   .process {
-    padding: 52px 0; background: var(--paper-2);
-    border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); margin-top: 64px;
+    padding: 56px 0 60px; background: var(--paper-2);
+    border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); margin-top: 56px;
   }
   .process .kicker { display: block; margin-bottom: 14px; }
   .process h2 {
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
-    letter-spacing: -.035em; margin: 0 0 14px; max-width: 18ch; line-height: 1.02;
+    letter-spacing: -.035em; margin: 0 0 46px; max-width: 18ch; line-height: 1.02;
   }
-  .process .sec-sub { margin: 0 0 28px; max-width: 60ch; }
-  .steps { display: grid; grid-template-columns: repeat(4, 1fr); }
-  .step {
-    padding: 0 30px; border-left: 1px solid var(--hair);
-    opacity: 0; transform: translateY(26px);
-    transition: opacity .6s ease, transform .6s ease;
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+  .tl-step {
+    position: relative; padding: 48px 26px 0 0;
+    opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s ease;
   }
-  .step.in { opacity: 1; transform: none; }
-  .step:first-child { padding-left: 0; border-left: 0; }
-  .step .n { font-size: clamp(42px, 4.4vw, 66px); font-weight: 800; letter-spacing: -.04em; line-height: 1; }
-  .step h4 { font-size: 18px; font-weight: 700; letter-spacing: -.01em; margin: 22px 0 8px; }
-  .step p { font-weight: 400; color: var(--ink-2); font-size: 15px; margin: 0; }
-  @media (max-width: 820px) { .steps { grid-template-columns: 1fr 1fr; gap: 44px 0; } .step:nth-child(3) { padding-left: 0; border-left: 0; } }
-  @media (max-width: 480px) { .steps { grid-template-columns: 1fr; gap: 40px; } .step { padding-left: 0; border-left: 0; } }
+  .tl-step.in { opacity: 1; transform: none; }
+  .tl-step::after {
+    content: ""; position: absolute; top: 18px; left: 14px; width: 100%; height: 2px;
+    background: var(--hair); z-index: 0;
+  }
+  .tl-step:last-child::after { display: none; }
+  .tl-node {
+    position: absolute; top: 4px; left: 0; z-index: 1;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--ink); color: var(--paper); font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tl-step h4 { font-size: 17px; font-weight: 800; letter-spacing: -.02em; margin: 0 0 8px; }
+  .tl-step p { font-weight: 400; color: var(--ink-2); font-size: 14px; margin: 0; line-height: 1.5; }
+  @media (max-width: 760px) {
+    .timeline { grid-template-columns: 1fr; }
+    .tl-step { padding: 0 0 32px 46px; }
+    .tl-step:last-child { padding-bottom: 0; }
+    .tl-node { top: 0; }
+    .tl-step::after { top: 28px; left: 13px; width: 2px; height: calc(100% - 28px); }
+  }
 
 
   /* ---- CTA ---- */
@@ -376,13 +388,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 820px) { .cap-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 520px) { .cap-grid { grid-template-columns: 1fr; } }
 
-  /* ---- studio use cases ---- */
-  .usecases { padding: 52px 0; border-top: 1px solid var(--hair); }
-  .usecases .kicker { display: block; margin-bottom: 14px; }
-  .usecases h2 {
-    font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
-    letter-spacing: -.035em; margin: 0 0 34px; max-width: 24ch; line-height: 1.02;
-  }
+  /* ---- use cases (within capabilities) ---- */
+  .uc-block { margin-top: 50px; }
+  .uc-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
   .uc-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; border-top: 1px solid var(--hair); }
   .uc {
     display: flex; gap: 14px; align-items: flex-start;
@@ -426,7 +434,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     * { transition: none !important; }
-    .step { opacity: 1; transform: none; }
+    .tl-step { opacity: 1; transform: none; }
   }
 </style>
 </head>
@@ -437,9 +445,8 @@ TEMPLATE = r"""<!DOCTYPE html>
     <a class="brand" href="#top" aria-label="Moonlake"><img src="{{LOGO_DARK}}" alt="Moonlake"></a>
     <nav>
       <a href="#examples">Lookbook</a>
-      <a href="#capabilities">Capabilities</a>
       <a href="#how">How it works</a>
-      <a href="mailto:studios@moonlake.ai">Contact</a>
+      <a href="#capabilities">Capabilities</a>
     </nav>
   </div>
 </div>
@@ -451,8 +458,8 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="hero-copy">
     <div class="inner">
       <div class="copy-block">
-        <p class="kicker">Simulation &amp; digital twins for robotics OEMs</p>
-        <h1>Accelerating robotics deployment with simulation and digital twins.</h1>
+        <p class="kicker">Moonlake - Accelerating robotics deployment</p>
+        <h1>Simulation &amp; digital twins for robotics OEMs.</h1>
         <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. OEMs use them to demo robots in customer spaces and validate deployments before install.</p>
         <div class="actions">
           <a class="btn solid" href="#examples">See the lookbook</a>
@@ -518,32 +525,26 @@ TEMPLATE = r"""<!DOCTYPE html>
   </div>
 </section>
 
-<!-- 3. What Moonlake does -->
-<section class="caps" id="capabilities">
-  <div class="wrap">
-    <span class="kicker">What Moonlake delivers</span>
-    <h2>Outputs that de-risk deployment.</h2>
-    <p class="sec-sub">Moonlake turns customer sources into simulation-ready assets, scenes, and blend files. Connected to manufacturers and factories worldwide.</p>
-    <div class="cap-grid" id="cap-grid"></div>
-  </div>
-</section>
-
-<!-- 4. How it works -->
+<!-- 3. How it works (service timeline) -->
 <section class="process" id="how">
   <div class="wrap">
     <span class="kicker">How it works</span>
     <h2>From your source to delivered assets.</h2>
-    <p class="sec-sub">Send an image, video, point cloud, or sensor data. Moonlake returns physically validated, simulation-ready assets and scenes.</p>
-    <div class="steps" id="steps"></div>
+    <div class="timeline" id="steps"></div>
   </div>
 </section>
 
-<!-- 5. Where it fits -->
-<section class="usecases" id="usecases">
+<!-- 4. Capabilities & use cases -->
+<section class="caps" id="capabilities">
   <div class="wrap">
-    <span class="kicker">For robotics OEMs</span>
-    <h2>For OEMs deploying robots into customer spaces.</h2>
-    <div class="uc-grid" id="uc-grid"></div>
+    <span class="kicker">Capabilities &amp; use cases</span>
+    <h2>Outputs that de-risk deployment.</h2>
+    <p class="sec-sub">Moonlake turns customer sources into simulation-ready assets, scenes, and blend files. Connected to manufacturers and factories worldwide.</p>
+    <div class="cap-grid" id="cap-grid"></div>
+    <div class="uc-block">
+      <span class="uc-label">For robotics OEMs</span>
+      <div class="uc-grid" id="uc-grid"></div>
+    </div>
   </div>
 </section>
 
@@ -714,7 +715,7 @@ $("#cap-grid").innerHTML = capabilities
   .map((c) => `<div class="cap-item"><h4>${c.t}</h4><p>${c.d}</p></div>`).join("");
 
 $("#steps").innerHTML = pipeline
-  .map((s, i) => `<div class="step"><div class="n">${String(i + 1).padStart(2, "0")}</div><h4>${s.h}</h4><p>${s.p}</p></div>`).join("");
+  .map((s, i) => `<div class="tl-step"><span class="tl-node">${String(i + 1).padStart(2, "0")}</span><h4>${s.h}</h4><p>${s.p}</p></div>`).join("");
 
 $("#uc-grid").innerHTML = useCases.map((u) => `<div class="uc">${u}</div>`).join("");
 
@@ -754,7 +755,7 @@ const io = new IntersectionObserver((entries) => {
     }
   });
 }, { threshold: 0.3 });
-document.querySelectorAll(".step").forEach((el, i) => { el.dataset.i = i; io.observe(el); });
+document.querySelectorAll(".tl-step").forEach((el, i) => { el.dataset.i = i; io.observe(el); });
 
 /* ---- lightbox ---- */
 const lb = $("#lightbox");
