@@ -251,7 +251,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   }
 
   /* ---- section heads ---- */
-  .work { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 100px 0 64px; }
+  .work { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; padding: 64px 0 22px; }
   .work-head {
     display: flex; justify-content: space-between; align-items: flex-end;
     gap: 28px; flex-wrap: wrap; margin-bottom: 8px;
@@ -274,11 +274,11 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 760px) { .logos-row { justify-content: flex-start; gap: 14px 22px; } .logo-ic svg { height: 17px; } }
 
   /* ---- results gallery (editorial) ---- */
-  .gallery { margin-top: 26px; }
-  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; }
+  .gallery { margin-top: 10px; flex: 1 1 0; min-height: 0; }
+  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; height: 100%; }
   .g-stage {
     position: relative; margin: 0; border: 1px solid var(--hair); border-radius: 4px;
-    background: var(--paper-2); overflow: hidden; aspect-ratio: 16 / 11;
+    background: var(--paper-2); overflow: hidden; min-height: 0;
     cursor: zoom-in; touch-action: pan-y; user-select: none; -webkit-user-select: none;
   }
   .g-stage img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; transition: opacity .3s ease; }
@@ -330,7 +330,10 @@ TEMPLATE = r"""<!DOCTYPE html>
   }
   .g-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   @media (max-width: 820px) {
-    .g-main { grid-template-columns: 1fr; gap: 22px; }
+    .work { min-height: auto; display: block; padding: 96px 0 40px; }
+    .gallery { flex: none; }
+    .g-main { grid-template-columns: 1fr; gap: 22px; height: auto; }
+    .g-stage { aspect-ratio: 16 / 11; }
     .g-controls { margin-top: 22px; }
   }
 
@@ -410,17 +413,17 @@ TEMPLATE = r"""<!DOCTYPE html>
   .foot a:hover { color: var(--ink-2); }
 
   /* ---- capabilities ---- */
-  .caps { padding: 52px 0; }
-  .caps .kicker { display: block; margin-bottom: 14px; }
+  .caps { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: 80px 0 44px; }
+  .caps .kicker { display: block; margin-bottom: 12px; }
   .caps h2 {
     font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
     letter-spacing: -.035em; margin: 0; max-width: 22ch; line-height: 1.02;
   }
   /* spec rows: accepts / delivers / capabilities */
-  .spec { margin-top: 38px; border-top: 1px solid var(--hair); }
+  .spec { margin-top: 26px; border-top: 1px solid var(--hair); }
   .spec-row {
-    display: grid; grid-template-columns: 220px 1fr; gap: 16px 40px;
-    padding: 26px 0; border-bottom: 1px solid var(--hair); align-items: start;
+    display: grid; grid-template-columns: 220px 1fr; gap: 14px 40px;
+    padding: 17px 0; border-bottom: 1px solid var(--hair); align-items: start;
   }
   .spec-label { font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); padding-top: 5px; }
   .spec-val { font-size: clamp(16px, 1.6vw, 20px); font-weight: 500; letter-spacing: -.01em; color: var(--ink); line-height: 1.5; }
@@ -428,12 +431,12 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 680px) { .spec-row { grid-template-columns: 1fr; gap: 6px; padding: 20px 0; } .spec-label { padding-top: 0; } }
 
   /* ---- use cases (within capabilities) ---- */
-  .uc-block { margin-top: 46px; }
+  .uc-block { margin-top: 28px; }
   .uc-label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
   .uc-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; border-top: 1px solid var(--hair); }
   .uc {
     display: flex; gap: 14px; align-items: flex-start;
-    padding: 22px 0; border-bottom: 1px solid var(--hair);
+    padding: 15px 0; border-bottom: 1px solid var(--hair);
     font-weight: 600; font-size: clamp(15px, 1.5vw, 18px); letter-spacing: -.01em;
   }
   .uc::before {
@@ -441,6 +444,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     background: var(--accent); margin-top: 9px; opacity: .6;
   }
   @media (max-width: 680px) { .uc-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 820px) { .caps { min-height: auto; display: block; padding: 56px 0; } }
 
 
   /* ---- lightbox ---- */
