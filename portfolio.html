@@ -143,9 +143,9 @@
   /* solid -> dark glass on hover */
   .btn.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .btn.solid:hover {
-    background: rgba(13,13,14,.4); border-color: rgba(13,13,14,.45);
-    backdrop-filter: blur(11px) saturate(150%); -webkit-backdrop-filter: blur(11px) saturate(150%);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 0 1px rgba(255,255,255,.08), 0 12px 30px rgba(13,13,14,.22);
+    background: rgba(255,255,255,.6); color: var(--ink); border-color: rgba(255,255,255,.85);
+    backdrop-filter: blur(12px) saturate(170%); -webkit-backdrop-filter: blur(12px) saturate(170%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 12px 30px rgba(13,13,14,.16);
   }
   /* outline -> lighter glass on hover */
   .btn.outline {
@@ -625,6 +625,7 @@ const $ = (s) => document.querySelector(s);
 
 /* ---- lookbook: input -> output flip cards ---- */
 const flip = $("#flip");
+const flipInner = $("#flip-inner");
 const inImg = $("#g-in-img");
 const outImg = $("#g-out-img");
 const outVid = $("#g-out-vid");
@@ -673,7 +674,15 @@ function renderGallery(i) {
 }
 
 function goTo(i) {
-  renderGallery(i);               // keep the current flipped side when switching examples
+  // every example starts on its input face -- snap back instantly (no flip spin),
+  // which also means the instant input image shows right away (no blank while a video loads)
+  if (flipped) {
+    flipInner.style.transition = "none";
+    setFlip(false);
+    void flipInner.offsetWidth;   // force reflow so the reset isn't animated
+    flipInner.style.transition = "";
+  }
+  renderGallery(i);
 }
 
 $("#g-prev").addEventListener("click", () => goTo(active - 1));
