@@ -55,11 +55,15 @@ def data_uri(path: pathlib.Path) -> str:
     return f"data:image/png;base64,{b64(path)}"
 
 
-# Web font: FK Grotesk SemiMono, embedded as base64 woff2 (weight -> file)
-FONT_WEIGHTS = [
-    ("400", "FKGroteskSemiMono-Regular.woff2"),
-    ("500", "FKGroteskSemiMono-Medium.woff2"),
-    ("700", "FKGroteskSemiMono-Bold.woff2"),
+# Web fonts, embedded as base64 woff2: (family, weight, style, file)
+FONT_FACES = [
+    ("FK Grotesk SemiMono", "400", "normal", "FKGroteskSemiMono-Regular.woff2"),
+    ("FK Grotesk SemiMono", "500", "normal", "FKGroteskSemiMono-Medium.woff2"),
+    ("FK Grotesk SemiMono", "700", "normal", "FKGroteskSemiMono-Bold.woff2"),
+    # STKSaga: used for the smaller description text
+    ("STKSaga", "400", "normal", "STKSaga-Regular.woff2"),
+    ("STKSaga", "500", "normal", "STKSaga-Medium.woff2"),
+    ("STKSaga", "400", "italic", "STKSaga-Italic.woff2"),
 ]
 
 # Credibility strip: (display name, simple-icons slug or None for name-only)
@@ -77,10 +81,10 @@ LOGO_ROW = [
 
 def build_font_faces() -> str:
     faces = []
-    for weight, fname in FONT_WEIGHTS:
+    for family, weight, style, fname in FONT_FACES:
         b = base64.b64encode((ASSETS / "fonts" / fname).read_bytes()).decode("ascii")
         faces.append(
-            "@font-face{font-family:'FK Grotesk SemiMono';font-style:normal;"
+            f"@font-face{{font-family:'{family}';font-style:{style};"
             f"font-weight:{weight};font-display:swap;"
             f"src:url(data:font/woff2;base64,{b}) format('woff2');}}"
         )
@@ -142,6 +146,8 @@ TEMPLATE = r"""<!DOCTYPE html>
     --hair: #ddd8cc;
     --accent: #8d8b86;
     --maxw: 1280px;
+    /* experiment: STKSaga for the smaller description copy */
+    --font-desc: "STKSaga", "FK Grotesk SemiMono", -apple-system, sans-serif;
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; scroll-padding-top: 90px; }
@@ -251,6 +257,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 
   /* ---- reusable section sub-copy ---- */
   .sec-sub {
+    font-family: var(--font-desc);
     font-weight: 400; color: var(--ink-2); font-size: clamp(15px, 1.2vw, 17px);
     max-width: 66ch; margin: 16px 0 0; line-height: 1.55;
   }
@@ -328,7 +335,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     font-size: clamp(22px, 2.4vw, 30px); font-weight: 800; letter-spacing: -.03em;
     line-height: 1.08; margin: 14px 0 0;
   }
-  #g-desc { font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 14px 0 0; max-width: 46ch; }
+  #g-desc { font-family: var(--font-desc); font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 14px 0 0; max-width: 46ch; }
   .g-specs { margin: 22px 0 0; border-top: 1px solid var(--hair); }
   .g-specs .row { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--hair); }
   .g-specs .k { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); align-self: center; }
@@ -378,7 +385,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     display: flex; align-items: center; justify-content: center;
   }
   .tl-step h4 { font-size: 16px; font-weight: 800; letter-spacing: -.02em; margin: 0 0 7px; }
-  .tl-step p { font-weight: 400; color: var(--ink-2); font-size: 13px; margin: 0 auto; line-height: 1.5; max-width: 26ch; }
+  .tl-step p { font-family: var(--font-desc); font-weight: 400; color: var(--ink-2); font-size: 13px; margin: 0 auto; line-height: 1.5; max-width: 26ch; }
   @media (max-width: 760px) {
     .timeline { grid-template-columns: 1fr; }
     .timeline::before { display: none; }
