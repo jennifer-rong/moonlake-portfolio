@@ -23,8 +23,9 @@ IMAGE_FILES = {
     "in_factory": "in_factory.png",
     "in_dock": "in_dock.png",
     "in_s6": "in_s6.png",
+    "in_s6b": "in_s6b.png",
 }
-VIDEO_FILES = ["s6_output.mp4"]                       # referenced (not base64) outputs
+VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4"]        # referenced (not base64) outputs
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
@@ -51,8 +52,9 @@ def prepare() -> None:
     resize(ASSETS / LOGO_LIGHT_SRC, BUILD / "logo_light.png", 800)
     resize(ASSETS / HERO_SRC, BUILD / "hero.png", 1800)
     resize(ASSETS / FAVICON_SRC, BUILD / "favicon.png", 256)
-    # in_s6 is already padded to the video's aspect at native res; keep it sharp
+    # padded inputs are already at the video's aspect at native res; keep them sharp
     (BUILD / "in_s6.png").write_bytes((ASSETS / "in_s6.png").read_bytes())
+    (BUILD / "in_s6b.png").write_bytes((ASSETS / "in_s6b.png").read_bytes())
 
 
 def data_uri(path: pathlib.Path) -> str:
@@ -184,15 +186,16 @@ TEMPLATE = r"""<!DOCTYPE html>
     display: flex; align-items: center; justify-content: space-between;
     height: 64px; padding: 0 16px 0 26px; max-width: var(--maxw); margin: 0 auto;
     border-radius: 999px;
-    background: linear-gradient(to bottom, rgba(255,255,255,.55), rgba(249,248,243,.30));
-    backdrop-filter: saturate(200%) blur(30px);
-    -webkit-backdrop-filter: saturate(200%) blur(30px);
-    border: 1px solid rgba(255,255,255,.6);
+    background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.14));
+    backdrop-filter: saturate(180%) blur(36px);
+    -webkit-backdrop-filter: saturate(180%) blur(36px);
+    border: 1px solid rgba(255,255,255,.7);
     box-shadow:
-      inset 0 1px 1px rgba(255,255,255,.95),
-      inset 0 -2px 4px rgba(255,255,255,.35),
-      0 12px 34px rgba(13,13,14,.12),
-      0 2px 8px rgba(13,13,14,.06);
+      inset 0 1px 1.5px rgba(255,255,255,.98),
+      inset 0 -3px 6px rgba(255,255,255,.30),
+      inset 0 0 0 1px rgba(255,255,255,.12),
+      0 16px 40px rgba(13,13,14,.13),
+      0 3px 10px rgba(13,13,14,.07);
   }
   .brand img { height: 22px; }
   .topbar nav { display: flex; gap: 34px; }
@@ -216,12 +219,12 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* live three.js geometry; layered canvases give depth-of-field (farther = blurrier) */
   .hero-fallback { transition: opacity .9s ease; }
   .hero-figure.is-live .hero-fallback { opacity: 0; }
-  .hero-scene { position: absolute; inset: 0; opacity: 0; transition: opacity 1.4s ease; }
-  .hero-scene.is-live { opacity: 1; }
-  .hero-layer { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-  .hero-layer--back { filter: blur(13px); opacity: .42; }
-  .hero-layer--mid  { filter: blur(4.5px); opacity: .78; }
-  .hero-layer--front { filter: blur(0); opacity: 1; }
+  /* single canvas; depth + fuzziness handled in-shader-ish per shape. global blur softens edges. */
+  .hero-canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+    opacity: 0; transition: opacity 1.4s ease; filter: blur(1.5px);
+  }
+  .hero-canvas.is-live { opacity: 1; }
   /* scrim grounds the copy: solid paper at the bottom-left fading up + right so the
      geometry stays visible top-right while the copy reads cleanly bottom-left */
   .hero::after {
@@ -235,25 +238,45 @@ TEMPLATE = r"""<!DOCTYPE html>
   .copy-block { max-width: 680px; }
   .hero .kicker { display: block; margin: 0 0 16px; }
   .hero h1 {
-    font-size: clamp(36px, 5.2vw, 74px); line-height: .99;
-    letter-spacing: -.035em; font-weight: 800; margin: 0 0 20px; max-width: 17ch;
+    font-size: clamp(40px, 6vw, 84px); line-height: .98;
+    letter-spacing: -.04em; font-weight: 800; margin: 0; max-width: 17ch;
   }
+  .hero-tagline {
+    font-size: clamp(17px, 1.9vw, 26px); font-weight: 500; letter-spacing: -.01em;
+    color: var(--ink-2); margin: 14px 0 0;
+  }
+  .hero-tagline .sep { color: var(--ink-3); margin: 0 10px; font-weight: 400; }
   .hero .lead {
     font-size: clamp(16px, 1.35vw, 19px); font-weight: 400;
-    color: var(--ink-2); max-width: 54ch; margin: 0 0 28px; line-height: 1.55;
+    color: var(--ink-2); max-width: 54ch; margin: 26px 0 28px; line-height: 1.55;
   }
 
   /* ---- buttons (shared) ---- */
   .actions { display: flex; gap: 14px; flex-wrap: wrap; }
   .btn {
+    position: relative; overflow: hidden;
     font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
     padding: 16px 30px; background: var(--paper); color: var(--ink); cursor: pointer;
     border: 1px solid transparent;
-    transition: transform .2s ease, background .2s ease, border-color .2s ease, color .2s ease;
+    transition: transform .25s ease, background .4s ease, border-color .4s ease, color .4s ease,
+      box-shadow .4s ease, backdrop-filter .4s ease, -webkit-backdrop-filter .4s ease;
   }
+  /* a light sweeps across the label on hover */
+  .btn::before {
+    content: ""; position: absolute; top: 0; left: -130%; width: 55%; height: 100%; z-index: 1;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.55) 50%, transparent);
+    transform: skewX(-18deg); transition: left .6s cubic-bezier(.4,.05,.2,1); pointer-events: none;
+  }
+  .btn:hover::before { left: 150%; }
   .btn:hover { transform: translateY(-2px); }
+  /* solid -> dark glass on hover */
   .btn.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .btn.solid:hover { background: #000; }
+  .btn.solid:hover {
+    background: rgba(13,13,14,.4); border-color: rgba(13,13,14,.45);
+    backdrop-filter: blur(11px) saturate(150%); -webkit-backdrop-filter: blur(11px) saturate(150%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 0 0 1px rgba(255,255,255,.08), 0 12px 30px rgba(13,13,14,.22);
+  }
+  /* outline -> lighter glass on hover */
   .btn.outline {
     background: linear-gradient(to bottom, rgba(255,255,255,.45), rgba(255,255,255,.14));
     color: var(--ink); border-color: var(--ink-3);
@@ -262,8 +285,10 @@ TEMPLATE = r"""<!DOCTYPE html>
     box-shadow: 0 1px 0 rgba(255,255,255,.7) inset, 0 6px 18px rgba(13,13,14,.06);
   }
   .btn.outline:hover {
-    border-color: var(--ink);
-    background: linear-gradient(to bottom, rgba(255,255,255,.6), rgba(255,255,255,.24));
+    border-color: rgba(255,255,255,.8);
+    background: rgba(255,255,255,.34);
+    backdrop-filter: blur(16px) saturate(190%); -webkit-backdrop-filter: blur(16px) saturate(190%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 12px 30px rgba(13,13,14,.12);
   }
   .btn.ghost { background: transparent; color: var(--paper); border-color: rgba(243,240,232,.32); }
   .btn.ghost:hover { background: rgba(243,240,232,.08); }
@@ -524,18 +549,15 @@ TEMPLATE = r"""<!DOCTYPE html>
 <header class="hero" id="top">
   <div class="hero-figure" id="hero-figure">
     <img class="hero-fallback" src="{{HERO}}" alt="Simulation-ready 3D geometry generated by Moonlake">
-    <div class="hero-scene" id="hero-scene" aria-hidden="true">
-      <canvas class="hero-layer hero-layer--back"></canvas>
-      <canvas class="hero-layer hero-layer--mid"></canvas>
-      <canvas class="hero-layer hero-layer--front"></canvas>
-    </div>
+    <canvas class="hero-canvas" id="hero-canvas" aria-hidden="true"></canvas>
   </div>
   <div class="hero-copy">
     <div class="inner">
       <div class="copy-block">
         <p class="kicker">Moonlake - Accelerating robotics deployment</p>
-        <h1>Accelerated pipelines for simulation, digital twins, and robotics.</h1>
-        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. OEMs use them to demo robots in customer spaces and validate deployments before install.</p>
+        <h1>Accelerated Pipelines</h1>
+        <p class="hero-tagline">Simulation <span class="sep">|</span> Digital Twins <span class="sep">|</span> Robotics</p>
+        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. Teams use them to demo robots in real spaces, validate deployments before install, and cut prep time.</p>
         <div class="actions">
           <a class="btn solid" href="mailto:studios@moonlake.ai?subject=Demo%20request">Book a Demo</a>
           <a class="btn outline" href="#how">How it works</a>
@@ -631,7 +653,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 </section>
 
 <footer><div class="wrap foot">
-  <span>© 2026 Moonlake. Simulation infrastructure for robotics deployment.</span>
+  <span>© 2026 Moonlake AI Inc.</span>
   <span><a href="https://moonlakeai.com">moonlakeai.com</a></span>
 </div></footer>
 
@@ -663,13 +685,14 @@ const assets = [
   },
   {
     img: "twin_conveyor",
-    inImg: "in_dock",
-    name: "Modular conveyor line",
-    desc: "A conveyor system rebuilt as a configurable 3D asset with inferred structure, ready for line layouts and throughput simulation.",
-    source: "Site photo",
+    video: "assets/s6_left.mp4",
+    inImg: "in_s6b",
+    name: "Palletizing work cell",
+    desc: "A live palletizing line reconstructed from a single camera feed into a physics-validated sim twin for pick-and-place validation.",
+    source: "Camera feed",
     engine: "Isaac Sim / Newton",
-    output: "Procedural, editable asset",
-    deliverables: ".blend · USD · configurable",
+    output: "Animated, physics-validated twin",
+    deliverables: ".blend · USD · sim-ready",
     status: "Sim output",
   },
   {
@@ -823,16 +846,19 @@ document.addEventListener("keydown", (e) => {
 
 <script type="module">
 /* ============================================================
-   Hero geometry: live three.js wireframes drifting as if through
-   a viscous fluid. Three stacked canvases (back/mid/front) get
-   increasing CSS blur -> real depth-of-field (farther = blurrier).
-   Falls back to the static PNG on reduced-motion or any failure.
+   Hero geometry: one set of wireframe solids drifting through a
+   viscous fluid. Each shape travels in depth (z) on its own cycle,
+   so it moves nearer (clearer) and farther (fuzzier). A fat faint
+   "halo" line plus a global blur feather the edges, like light
+   leaking through the wireframes. Left-side shapes sit farther back
+   and fainter so the headline stays readable. Falls back to the PNG
+   on reduced-motion or any load failure.
    ============================================================ */
 (async () => {
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const scene = document.getElementById("hero-scene");
+  const canvas = document.getElementById("hero-canvas");
   const figure = document.getElementById("hero-figure");
-  if (reduce || !scene) return;
+  if (reduce || !canvas) return;
 
   let THREE, LineSegments2, LineSegmentsGeometry, LineMaterial;
   try {
@@ -842,128 +868,103 @@ document.addEventListener("keydown", (e) => {
     ({ LineMaterial } = await import("three/addons/lines/LineMaterial.js"));
   } catch (e) { return; }            // CDN blocked -> keep PNG
 
-  const INK = 0x16161b;
-  const canvases = scene.querySelectorAll("canvas");
+  const INK = 0x33333b;              // softened so the shapes never dominate the copy
+  const NEAR = 2.2, FAR = -6;        // depth range mapped to clarity
 
-  // geometry recipes (clean convex solids -> crisp facet edges, not busy)
-  const geo = {
+  const solids = {
     ico1: new THREE.IcosahedronGeometry(1, 1),
     ico0: new THREE.IcosahedronGeometry(1, 0),
     dodeca: new THREE.DodecahedronGeometry(1),
     octa: new THREE.OctahedronGeometry(1),
-    cube: new THREE.BoxGeometry(1.35, 1.35, 1.35),
+    cube: new THREE.BoxGeometry(1.3, 1.3, 1.3),
   };
+  const edges = {};
+  for (const k in solids) edges[k] = new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(solids[k], 1));
 
-  function makeShape(g, o) {
-    const group = new THREE.Group();
-    const fill = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
-      color: INK, transparent: true, opacity: 0.045, depthWrite: false,
-    }));
-    const lsg = new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(g, 1));
-    const lmat = new LineMaterial({
-      color: INK, linewidth: o.lw, transparent: true, opacity: o.lo,
-    });
-    const seg = new LineSegments2(lsg, lmat);
-    group.add(fill, seg);
-    group.position.set(o.x, o.y, 0);
-    group.scale.setScalar(o.s);
-    group.userData = o.m;            // motion params
-    group._lmat = lmat;
-    return group;
+  const lmats = [];
+  function line(k, lw, op) {
+    const m = new LineMaterial({ color: INK, linewidth: lw, transparent: true, opacity: op, depthTest: false });
+    lmats.push(m);
+    return new LineSegments2(edges[k], m);
   }
 
-  // depth bands: each its own canvas + scene + camera; CSS blurs them
-  const bands = [
-    { canvas: canvases[0], par: 0.30, shapes: [
-        { g: "ico1", x: 1.2, y: 0.55, s: 2.25, lw: 2.4, lo: 0.9,
-          m: { rx: 0.045, ry: 0.06, ax: 0.18, ay: 0.22, fx: 0.13, fy: 0.11, px: 0.0, py: 1.3,
-               dx: 0.34, dy: 0.26, dz: 0.5, fdx: 0.12, fdy: 0.09, fdz: 0.07, pdx: 0.5, pdy: 2.1 } },
-      ] },
-    { canvas: canvases[1], par: 0.7, shapes: [
-        { g: "dodeca", x: 2.35, y: 1.2, s: 1.05, lw: 2.2, lo: 0.92,
-          m: { rx: 0.07, ry: 0.05, ax: 0.25, ay: 0.2, fx: 0.17, fy: 0.14, px: 1.1, py: 0.3,
-               dx: 0.3, dy: 0.28, dz: 0.4, fdx: 0.16, fdy: 0.12, fdz: 0.1, pdx: 2.0, pdy: 0.7 } },
-        { g: "cube", x: -0.15, y: 1.15, s: 0.82, lw: 2.2, lo: 0.85,
-          m: { rx: 0.06, ry: 0.085, ax: 0.2, ay: 0.26, fx: 0.12, fy: 0.16, px: 2.4, py: 1.0,
-               dx: 0.32, dy: 0.24, dz: 0.45, fdx: 0.13, fdy: 0.15, fdz: 0.09, pdx: 0.9, pdy: 3.0 } },
-      ] },
-    { canvas: canvases[2], par: 1.2, shapes: [
-        { g: "octa", x: 2.75, y: -0.05, s: 0.8, lw: 2.6, lo: 1.0,
-          m: { rx: 0.09, ry: 0.07, ax: 0.28, ay: 0.24, fx: 0.19, fy: 0.15, px: 0.6, py: 2.2,
-               dx: 0.28, dy: 0.3, dz: 0.5, fdx: 0.18, fdy: 0.14, fdz: 0.12, pdx: 1.4, pdy: 0.2 } },
-        { g: "ico0", x: 0.75, y: 1.7, s: 0.6, lw: 2.6, lo: 1.0,
-          m: { rx: 0.11, ry: 0.08, ax: 0.3, ay: 0.26, fx: 0.21, fy: 0.18, px: 3.0, py: 0.9,
-               dx: 0.26, dy: 0.26, dz: 0.4, fdx: 0.2, fdy: 0.17, fdz: 0.13, pdx: 2.6, pdy: 1.7 } },
-      ] },
+  // one set of shapes spread across the width. dim = static dimming (left = fainter),
+  // zc = depth centre, za = travel through depth.
+  const defs = [
+    { g: "dodeca", x: -3.3, y: 0.8,  s: 1.5,  dim: 0.5,  zc: -3.4, za: 2.0, rx: 0.05, ry: 0.04, fz: 0.05, pz: 0.4, dx: 0.5,  dy: 0.4,  fdx: 0.08, fdy: 0.06, pdx: 0.5, pdy: 2.0, sh: 0.6 },
+    { g: "ico1",   x: -1.5, y: -0.3, s: 1.7,  dim: 0.6,  zc: -2.2, za: 2.6, rx: 0.04, ry: 0.06, fz: 0.07, pz: 1.7, dx: 0.45, dy: 0.45, fdx: 0.07, fdy: 0.09, pdx: 2.1, pdy: 0.7, sh: 1.4 },
+    { g: "octa",   x: 0.6,  y: 1.4,  s: 1.0,  dim: 0.9,  zc: -0.4, za: 2.8, rx: 0.08, ry: 0.06, fz: 0.09, pz: 0.2, dx: 0.5,  dy: 0.4,  fdx: 0.10, fdy: 0.07, pdx: 1.4, pdy: 3.0, sh: 2.2 },
+    { g: "cube",   x: 2.1,  y: 0.1,  s: 1.0,  dim: 1.0,  zc: 0.2,  za: 2.4, rx: 0.06, ry: 0.085, fz: 0.08, pz: 2.4, dx: 0.45, dy: 0.42, fdx: 0.09, fdy: 0.08, pdx: 0.9, pdy: 1.2, sh: 0.9 },
+    { g: "ico0",   x: 3.2,  y: 1.2,  s: 0.85, dim: 1.0,  zc: 0.5,  za: 2.2, rx: 0.10, ry: 0.08, fz: 0.11, pz: 3.0, dx: 0.40, dy: 0.40, fdx: 0.12, fdy: 0.10, pdx: 2.6, pdy: 0.3, sh: 1.8 },
   ];
 
-  const layers = bands.map((b) => {
-    const renderer = new THREE.WebGLRenderer({ canvas: b.canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    const sc = new THREE.Scene();
-    const root = new THREE.Group();
-    sc.add(root);
-    const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-    cam.position.set(0, 0, 6);
-    const objs = b.shapes.map((o) => {
-      const grp = makeShape(geo[o.g], o);
-      grp.userData.base = grp.position.clone();
-      root.add(grp);
-      return grp;
-    });
-    return { renderer, sc, cam, root, objs, par: b.par };
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const root = new THREE.Group();
+  scene.add(root);
+  const cam = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+  cam.position.set(0, 0, 6);
+
+  const shapes = defs.map((d) => {
+    const group = new THREE.Group();
+    const halo = line(d.g, 9, 0.12);   // fat faint line -> fuzzy glow
+    const core = line(d.g, 1.7, 0.4);
+    group.add(halo, core);
+    group.scale.setScalar(d.s);
+    group.userData = d;
+    group._core = core.material; group._halo = halo.material;
+    root.add(group);
+    return group;
   });
 
   function resize() {
-    const w = scene.clientWidth, h = scene.clientHeight;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
     if (!w || !h) return;
-    layers.forEach((L) => {
-      L.renderer.setSize(w, h, false);
-      L.cam.aspect = w / h; L.cam.updateProjectionMatrix();
-      L.objs.forEach((g) => g._lmat.resolution.set(w, h));
-    });
+    renderer.setSize(w, h, false);
+    cam.aspect = w / h; cam.updateProjectionMatrix();
+    lmats.forEach((m) => m.resolution.set(w, h));
   }
   resize();
   window.addEventListener("resize", resize, { passive: true });
 
-  // viscous pointer follow: target set on move, position eased very slowly
   let tx = 0, ty = 0, cx = 0, cy = 0;
   window.addEventListener("pointermove", (e) => {
     tx = (e.clientX / window.innerWidth - 0.5);
     ty = (e.clientY / window.innerHeight - 0.5);
   }, { passive: true });
 
-  // only animate while the hero is on screen
   let visible = true;
-  new IntersectionObserver((ents) => { visible = ents[0].isIntersecting; },
-    { threshold: 0 }).observe(scene);
+  new IntersectionObserver((ents) => { visible = ents[0].isIntersecting; }, { threshold: 0 }).observe(canvas);
 
+  const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
   const clock = new THREE.Clock();
   function frame() {
     requestAnimationFrame(frame);
     if (!visible) return;
     const t = clock.getElapsedTime();
-    cx += (tx - cx) * 0.022;          // heavy damping -> fluid lag
-    cy += (ty - cy) * 0.022;
-    layers.forEach((L) => {
-      L.objs.forEach((g) => {
-        const m = g.userData, b = m.base;
-        g.rotation.x = t * m.rx + m.ax * Math.sin(t * m.fx + m.px);
-        g.rotation.y = t * m.ry + m.ay * Math.cos(t * m.fy + m.py);
-        g.rotation.z = m.ax * 0.4 * Math.sin(t * m.fx * 0.7 + m.py);
-        g.position.x = b.x + m.dx * Math.sin(t * m.fdx + m.pdx);
-        g.position.y = b.y + m.dy * Math.cos(t * m.fdy + m.pdy);
-        g.position.z = m.dz * Math.sin(t * m.fdz);
-      });
-      L.root.position.x = cx * L.par;
-      L.root.position.y = -cy * L.par;
-      L.renderer.render(L.sc, L.cam);
-    });
+    cx += (tx - cx) * 0.02; cy += (ty - cy) * 0.02;     // viscous pointer lag
+    for (const g of shapes) {
+      const d = g.userData;
+      const z = d.zc + d.za * Math.sin(t * d.fz + d.pz);
+      const par = 2.2 + z * 0.25;                        // nearer shapes parallax more
+      g.position.set(
+        d.x + d.dx * Math.sin(t * d.fdx + d.pdx) + cx * par,
+        d.y + d.dy * Math.cos(t * d.fdy + d.pdy) - cy * par,
+        z
+      );
+      g.rotation.x = t * d.rx + 0.2 * Math.sin(t * d.fz + d.pz);
+      g.rotation.y = t * d.ry + 0.2 * Math.cos(t * d.fz * 1.3 + d.pdx);
+      const f = clamp01((z - FAR) / (NEAR - FAR));       // 0 far .. 1 near
+      const shimmer = 0.78 + 0.22 * Math.sin(t * 0.6 + d.sh);
+      g._core.opacity = (0.05 + 0.29 * f) * d.dim;       // near -> sharper core
+      g._halo.opacity = (0.04 + 0.18 * (1 - f)) * d.dim * shimmer; // far -> fuzzy halo
+    }
+    renderer.render(scene, cam);
   }
   frame();
 
-  // reveal the live scene, fade out the PNG
-  requestAnimationFrame(() => { scene.classList.add("is-live"); figure.classList.add("is-live"); });
+  requestAnimationFrame(() => { canvas.classList.add("is-live"); figure.classList.add("is-live"); });
 })();
 </script>
 </body>
