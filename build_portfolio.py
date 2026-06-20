@@ -22,7 +22,9 @@ IMAGE_FILES = {
     "in_appliance": "in_appliance.png",
     "in_factory": "in_factory.png",
     "in_dock": "in_dock.png",
+    "in_s6": "in_s6.png",
 }
+VIDEO_FILES = ["s6_output.mp4"]                       # referenced (not base64) outputs
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
@@ -49,6 +51,8 @@ def prepare() -> None:
     resize(ASSETS / LOGO_LIGHT_SRC, BUILD / "logo_light.png", 800)
     resize(ASSETS / HERO_SRC, BUILD / "hero.png", 1800)
     resize(ASSETS / FAVICON_SRC, BUILD / "favicon.png", 256)
+    # in_s6 is already padded to the video's aspect at native res; keep it sharp
+    (BUILD / "in_s6.png").write_bytes((ASSETS / "in_s6.png").read_bytes())
 
 
 def data_uri(path: pathlib.Path) -> str:
@@ -301,69 +305,64 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
   @media (max-width: 760px) { .logo-ic svg { height: 24px; } .logos-row { gap: 48px; padding-right: 48px; } }
 
-  /* ---- results gallery (editorial) ---- */
-  .gallery { margin-top: 12px; flex: 1 1 0; min-height: 0; }
-  .g-main { display: grid; grid-template-columns: 1.35fr 1fr; grid-template-rows: 1fr; gap: clamp(24px, 4vw, 64px); align-items: stretch; height: 100%; }
-  .g-stage {
-    position: relative; margin: 0; border: 1px solid var(--hair); border-radius: 4px;
-    background: var(--paper-2); overflow: hidden; min-height: 0;
-    cursor: zoom-in; touch-action: pan-y; user-select: none; -webkit-user-select: none;
+  /* ---- lookbook: input -> output flip cards ---- */
+  .gallery { margin-top: 16px; flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+  .flip {
+    position: relative; width: min(100%, 96vh); max-height: 60vh; margin: 0 auto;
+    aspect-ratio: 1920 / 1040; perspective: 1700px; cursor: pointer;
   }
-  .g-stage img { width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; transition: opacity .3s ease; }
-  .g-stage.fade img { opacity: 0; }
-  .g-tag {
+  .flip-inner {
+    position: absolute; inset: 0; transform-style: preserve-3d;
+    transition: transform .75s cubic-bezier(.4, .05, .2, 1);
+  }
+  .flip.flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border: 1px solid var(--hair); border-radius: 6px; overflow: hidden; background: var(--paper-2);
+  }
+  .flip-back { transform: rotateY(180deg); }
+  .flip-face img, .flip-face video { width: 100%; height: 100%; object-fit: cover; display: block; }
+  #g-out-vid { display: none; }
+  .flip-tag {
     position: absolute; top: 14px; left: 14px; z-index: 2;
     font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
-    color: var(--ink-2); background: rgba(249,248,243,.9); padding: 5px 10px; border-radius: 2px;
+    color: var(--ink-2); background: rgba(249,248,243,.92); padding: 6px 11px; border-radius: 2px;
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
-  .g-zoom {
-    position: absolute; bottom: 14px; right: 14px; z-index: 2;
-    font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--ink-2); background: rgba(249,248,243,.9); padding: 5px 10px; border-radius: 2px;
-    opacity: 0; transition: opacity .25s ease; pointer-events: none;
+  .flip-tag--out { color: var(--paper); background: rgba(13,13,14,.82); }
+  .flip-hint {
+    position: absolute; bottom: 14px; right: 14px; z-index: 4; pointer-events: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--paper); background: rgba(13,13,14,.8); padding: 8px 13px; border-radius: 100px;
+    transition: background .2s ease;
   }
-  .g-stage:hover .g-zoom { opacity: 1; }
-  /* input inset: shows the source the output was generated from */
-  .g-inset {
-    position: absolute; bottom: 14px; left: 14px; z-index: 2; margin: 0;
-    width: 30%; max-width: 172px; border: 1px solid rgba(13,13,14,.18); border-radius: 3px;
-    overflow: hidden; box-shadow: 0 6px 18px rgba(13,13,14,.28); background: var(--paper);
+  .flip-hint-ic { font-size: 13px; line-height: 1; }
+  .flip:hover .flip-hint { background: var(--ink); }
+  .flip:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+  /* example tabs replace the old prev/next arrows */
+  .g-tabs { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; max-width: 820px; margin: 22px auto 0; border-top: 1px solid var(--hair); }
+  .g-tab {
+    display: flex; align-items: baseline; gap: 11px; text-align: left;
+    background: none; border: 0; border-top: 2px solid transparent; margin-top: -1px;
+    padding: 13px 16px 13px 0; cursor: pointer; color: var(--ink-3);
+    transition: color .2s ease, border-color .2s ease; font: inherit;
   }
-  .g-inset img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
-  .g-inset figcaption {
-    position: absolute; top: 0; left: 0; font-size: 9px; font-weight: 700; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--paper); background: rgba(13,13,14,.82); padding: 3px 7px;
-  }
-  .g-inset.hide { display: none; }
-  /* caption column */
-  .g-caption { display: flex; flex-direction: column; }
-  .g-index { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--ink-3); }
-  .g-index .g-sep { margin: 0 5px; opacity: .6; }
-  .g-caption h3 {
-    font-size: clamp(22px, 2.4vw, 30px); font-weight: 800; letter-spacing: -.03em;
-    line-height: 1.08; margin: 14px 0 0;
-  }
-  #g-desc { font-family: var(--font-desc); font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 14px 0 0; max-width: 46ch; }
-  .g-specs { margin: 22px 0 0; border-top: 1px solid var(--hair); }
-  .g-specs .row { display: grid; grid-template-columns: 128px 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--hair); }
-  .g-specs .k { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--ink-3); align-self: center; }
-  .g-specs .v { font-size: 14px; font-weight: 500; color: var(--ink); }
-  .g-controls { display: flex; gap: 10px; margin-top: auto; padding-top: 26px; }
-  .g-arrow {
-    width: 46px; height: 46px; border-radius: 50%; cursor: pointer;
-    background: var(--paper); border: 1px solid var(--ink-3); color: var(--ink);
-    font-size: 20px; line-height: 1; display: flex; align-items: center; justify-content: center;
-    transition: background .2s ease, color .2s ease, border-color .2s ease;
-  }
-  .g-arrow:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .g-tab:hover { color: var(--ink-2); }
+  .g-tab.is-active { color: var(--ink); border-top-color: var(--ink); }
+  .g-tab-n { font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+  .g-tab-name { font-size: 13px; font-weight: 500; line-height: 1.2; }
+  /* active example copy */
+  .g-info { width: 100%; max-width: 820px; margin: 16px auto 0; }
+  #g-desc { font-family: var(--font-desc); font-size: 15px; line-height: 1.55; color: var(--ink-2); margin: 0; max-width: 66ch; }
+  .g-specline { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 11px 0 0; }
   @media (max-width: 820px) {
     .work { min-height: auto; display: block; padding: 96px 0 40px; }
     .work > .wrap { display: block; }
-    .gallery { flex: none; }
-    .g-main { grid-template-columns: 1fr; grid-template-rows: auto; gap: 22px; height: auto; }
-    .g-stage { aspect-ratio: 16 / 11; }
-    .g-controls { margin-top: 22px; }
+    .gallery { flex: none; display: block; }
+    .flip { width: 100%; max-height: none; }
+    .g-tabs, .g-info { max-width: none; }
+    .g-tab-name { display: none; }
   }
 
   /* ---- process timeline ---- */
@@ -487,26 +486,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   @media (max-width: 820px) { .caps { min-height: auto; display: block; padding: 56px 0; } }
 
 
-  /* ---- lightbox ---- */
-  .lb {
-    position: fixed; inset: 0; z-index: 100; display: none;
-    background: rgba(243,240,232,.97); align-items: center; justify-content: center; padding: 5vw;
-    opacity: 0; transition: opacity .2s ease;
-  }
-  .lb.open { display: flex; opacity: 1; }
-  .lb-inner { max-width: 92vw; text-align: center; }
-  .lb img { max-width: 90vw; max-height: 74vh; object-fit: contain; }
-  .lb .cap { color: var(--ink); margin-top: 24px; }
-  .lb .cap h3 { margin: 0 0 6px; font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
-  .lb .cap p { margin: 0; color: var(--ink-3); font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
-  .lb button {
-    position: absolute; border: 1px solid var(--hair); background: rgba(13,13,14,.04);
-    color: var(--ink); cursor: pointer; line-height: 1;
-  }
-  .lb .close { top: 26px; right: 28px; width: 44px; height: 44px; font-size: 22px; }
-  .lb .nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; font-size: 24px; }
-  .lb .nav.prev { left: 26px; } .lb .nav.next { right: 26px; }
-
   .hidden { display: none !important; }
 
   @media (max-width: 860px) {
@@ -580,32 +559,32 @@ TEMPLATE = r"""<!DOCTYPE html>
     <div class="work-head">
       <div>
         <span class="kicker">Lookbook</span>
-        <h2>Assets &amp; scenes Moonlake delivers.</h2>
+        <h2>Input, transformed.</h2>
       </div>
     </div>
-    <p class="sec-sub">Each example is a customer source (image, video, or point cloud) turned into a simulation-ready asset, scene, and blend file.</p>
+    <p class="sec-sub">Flip each card to see a customer's real source become a simulation-ready twin.</p>
 
     <div class="gallery" id="gallery">
-      <div class="g-main">
-        <figure class="g-stage" id="g-stage">
-          <span class="g-tag" id="g-tag"></span>
-          <figure class="g-inset" id="g-inset">
+      <div class="flip" id="flip" role="button" tabindex="0" aria-label="Flip between input and output">
+        <div class="flip-inner" id="flip-inner">
+          <div class="flip-face flip-front">
+            <span class="flip-tag">Input</span>
             <img id="g-in-img" alt="" draggable="false">
-            <figcaption>Input</figcaption>
-          </figure>
-          <img id="g-img" alt="" draggable="false">
-          <span class="g-zoom" aria-hidden="true">Click to enlarge</span>
-        </figure>
-        <div class="g-caption">
-          <div class="g-index"><span id="g-num">01</span> <span class="g-sep">/</span> <span id="g-total">03</span></div>
-          <h3 id="g-title"></h3>
-          <p id="g-desc"></p>
-          <dl class="g-specs" id="g-specs"></dl>
-          <div class="g-controls">
-            <button class="g-arrow" id="g-prev" aria-label="Previous result">&#8249;</button>
-            <button class="g-arrow" id="g-next" aria-label="Next result">&#8250;</button>
+          </div>
+          <div class="flip-face flip-back">
+            <span class="flip-tag flip-tag--out">Output</span>
+            <img id="g-out-img" alt="" draggable="false">
+            <video id="g-out-vid" muted loop playsinline preload="metadata"></video>
           </div>
         </div>
+        <span class="flip-hint" id="flip-hint"><span class="flip-hint-ic">&#8635;</span> <span id="flip-hint-tx">Flip to output</span></span>
+      </div>
+
+      <div class="g-tabs" id="g-tabs" role="tablist" aria-label="Examples"></div>
+
+      <div class="g-info">
+        <p id="g-desc"></p>
+        <p class="g-specline" id="g-specline"></p>
       </div>
     </div>
   </div>
@@ -656,16 +635,6 @@ TEMPLATE = r"""<!DOCTYPE html>
   <span><a href="https://moonlakeai.com">moonlakeai.com</a></span>
 </div></footer>
 
-<div class="lb" id="lightbox" aria-hidden="true">
-  <button class="close" id="lb-close" aria-label="Close">&times;</button>
-  <button class="nav prev" id="lb-prev" aria-label="Previous">&#8249;</button>
-  <button class="nav next" id="lb-next" aria-label="Next">&#8250;</button>
-  <div class="lb-inner">
-    <img id="lb-img" alt="">
-    <div class="cap"><h3 id="lb-title"></h3><p id="lb-sub"></p></div>
-  </div>
-</div>
-
 <script>
 /* ============================================================
    IMAGES: base64 data URIs, injected at build time
@@ -682,12 +651,13 @@ const IMAGES = {
 const assets = [
   {
     img: "twin_simrobot",
-    inImg: "in_appliance",
+    video: "assets/s6_output.mp4",
+    inImg: "in_s6",
     name: "Articulated appliance twin",
-    desc: "A customer appliance and robot arm reconstructed from a single product photo and calibrated in NVIDIA Newton for manipulation testing.",
+    desc: "A customer appliance reconstructed from a single product photo into an animated, physics-validated sim twin in NVIDIA Newton.",
     source: "Single product photo",
     engine: "NVIDIA Newton",
-    output: "Articulated, sim-ready twin",
+    output: "Animated, physics-validated twin",
     deliverables: ".blend · USD · sim-ready",
     status: "Sim output",
   },
@@ -736,64 +706,66 @@ const useCases = [
    ============================================================ */
 const $ = (s) => document.querySelector(s);
 
-/* ---- results gallery (editorial) ---- */
-const gImg = $("#g-img");
-const gStage = $("#g-stage");
+/* ---- lookbook: input -> output flip cards ---- */
+const flip = $("#flip");
+const inImg = $("#g-in-img");
+const outImg = $("#g-out-img");
+const outVid = $("#g-out-vid");
+const hintTx = $("#flip-hint-tx");
 let active = 0;
+let flipped = false;
+
+function syncVideo() {
+  const a = assets[active];
+  if (flipped && a.video) { outVid.play().catch(() => {}); }
+  else { outVid.pause(); }
+}
+
+function setFlip(state) {
+  flipped = state;
+  flip.classList.toggle("flipped", flipped);
+  flip.setAttribute("aria-pressed", String(flipped));
+  hintTx.textContent = flipped ? "Flip to input" : "Flip to output";
+  syncVideo();
+}
 
 function renderGallery(i) {
   active = (i + assets.length) % assets.length;
   const a = assets[active];
-  gImg.src = IMAGES[a.img];
-  gImg.alt = a.name + " output";
-  const inset = $("#g-inset");
-  if (a.inImg && IMAGES[a.inImg]) {
-    $("#g-in-img").src = IMAGES[a.inImg];
-    $("#g-in-img").alt = a.name + " input";
-    inset.classList.remove("hide");
+  inImg.src = IMAGES[a.inImg];
+  inImg.alt = a.name + " — input";
+  if (a.video) {
+    if (outVid.getAttribute("src") !== a.video) outVid.src = a.video;
+    outVid.style.display = "block";
+    outImg.style.display = "none";
   } else {
-    inset.classList.add("hide");
+    outImg.src = IMAGES[a.img];
+    outImg.alt = a.name + " — output";
+    outImg.style.display = "block";
+    outVid.style.display = "none";
   }
-  $("#g-tag").textContent = a.status;
-  $("#g-num").textContent = String(active + 1).padStart(2, "0");
-  $("#g-total").textContent = String(assets.length).padStart(2, "0");
-  $("#g-title").textContent = a.name;
   $("#g-desc").textContent = a.desc;
-  $("#g-specs").innerHTML = [
-    ["Source", a.source],
-    ["Output", a.output],
-    ["Physics engine", a.engine],
-    ["Deliverables", a.deliverables],
-  ].map(([k, v]) => `<div class="row"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  $("#g-specline").textContent = [a.source, a.engine, a.deliverables].join("  ·  ");
+  document.querySelectorAll(".g-tab").forEach((t, k) => t.classList.toggle("is-active", k === active));
+  syncVideo();
 }
 
 function goTo(i) {
-  gStage.classList.add("fade");
-  setTimeout(() => { renderGallery(i); gStage.classList.remove("fade"); }, 170);
+  setFlip(false);                 // each new example starts on its input face
+  renderGallery(i);
 }
 
-$("#g-prev").addEventListener("click", () => goTo(active - 1));
-$("#g-next").addEventListener("click", () => goTo(active + 1));
+$("#g-tabs").innerHTML = assets.map((a, i) =>
+  `<button class="g-tab" role="tab" data-i="${i}"><span class="g-tab-n">${String(i + 1).padStart(2, "0")}</span><span class="g-tab-name">${a.name}</span></button>`).join("");
+$("#g-tabs").addEventListener("click", (e) => {
+  const b = e.target.closest(".g-tab");
+  if (b) goTo(+b.dataset.i);
+});
 
-/* drag / swipe on the stage; click (no drag) enlarges */
-let dragging = false, dragMoved = false, startX = 0;
-gStage.addEventListener("pointerdown", (e) => {
-  dragging = true; dragMoved = false; startX = e.clientX;
-  try { gStage.setPointerCapture(e.pointerId); } catch (err) {}
+flip.addEventListener("click", () => setFlip(!flipped));
+flip.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlip(!flipped); }
 });
-gStage.addEventListener("pointermove", (e) => {
-  if (dragging && Math.abs(e.clientX - startX) > 8) dragMoved = true;
-});
-function endStageDrag(e) {
-  if (!dragging) return;
-  dragging = false;
-  const dx = (e ? e.clientX : startX) - startX;
-  if (dx <= -50) goTo(active + 1);
-  else if (dx >= 50) goTo(active - 1);
-}
-gStage.addEventListener("pointerup", endStageDrag);
-gStage.addEventListener("pointercancel", endStageDrag);
-gStage.addEventListener("click", () => { if (!dragMoved) openLb(active); });
 
 renderGallery(0);
 
@@ -840,35 +812,12 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.3 });
 document.querySelectorAll(".tl-step").forEach((el, i) => { el.dataset.i = i; io.observe(el); });
 
-/* ---- lightbox ---- */
-const lb = $("#lightbox");
-let current = 0;
-function openLb(i) {
-  current = i;
-  const a = assets[i];
-  $("#lb-img").src = IMAGES[a.img];
-  $("#lb-img").alt = a.name;
-  $("#lb-title").textContent = a.name;
-  $("#lb-sub").textContent = `${a.status} · ${a.engine} · ${a.output}`;
-  lb.classList.add("open");
-  lb.setAttribute("aria-hidden", "false");
-}
-function closeLb() { lb.classList.remove("open"); lb.setAttribute("aria-hidden", "true"); }
-function step(d) {
-  const n = assets.length;
-  const next = (current + d + n) % n;
-  renderGallery(next);   // keep the gallery in sync with the lightbox
-  openLb(next);
-}
-$("#lb-close").addEventListener("click", closeLb);
-$("#lb-prev").addEventListener("click", () => step(-1));
-$("#lb-next").addEventListener("click", () => step(1));
-lb.addEventListener("click", (e) => { if (e.target === lb) closeLb(); });
+/* ---- arrow keys switch lookbook examples ---- */
 document.addEventListener("keydown", (e) => {
-  if (!lb.classList.contains("open")) return;
-  if (e.key === "Escape") closeLb();
-  if (e.key === "ArrowLeft") step(-1);
-  if (e.key === "ArrowRight") step(1);
+  const tag = (document.activeElement && document.activeElement.tagName) || "";
+  if (tag === "INPUT" || tag === "TEXTAREA") return;
+  if (e.key === "ArrowLeft") goTo(active - 1);
+  if (e.key === "ArrowRight") goTo(active + 1);
 });
 </script>
 
