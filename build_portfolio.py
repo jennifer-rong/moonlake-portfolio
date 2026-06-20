@@ -26,21 +26,7 @@ IMAGE_FILES = {
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
-
-# Favicon: the Moonlake cube + crescent mark, as a crisp inline SVG (sharp at any size)
-FAVICON_SVG = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
-    '<rect width="64" height="64" rx="7" fill="#ffffff"/>'
-    '<g stroke="#0d0d0e" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round">'
-    '<path d="M9 24 L43 24 L43 58 L9 58 Z"/>'
-    '<path d="M9 24 L21 12 L55 12 L43 24"/>'
-    '<path d="M43 24 L55 12 L55 46 L43 58"/>'
-    '</g>'
-    '<path d="M9 24 L21 12 L21 24 Z" fill="#0d0d0e"/>'
-    '<path d="M43 58 L55 46 L55 58 Z" fill="#0d0d0e"/>'
-    '<path transform="rotate(20 28 41)" d="M28 26 A15 15 0 1 0 28 56 A11.5 11.5 0 1 1 28 26 Z" fill="#0d0d0e"/>'
-    '</svg>'
-)
+FAVICON_SRC = "site_icon.png"                         # exact Moonlake cube + crescent mark
 
 
 def b64(path: pathlib.Path) -> str:
@@ -62,6 +48,7 @@ def prepare() -> None:
     resize(ASSETS / LOGO_DARK_SRC, BUILD / "logo_dark.png", 800)
     resize(ASSETS / LOGO_LIGHT_SRC, BUILD / "logo_light.png", 800)
     resize(ASSETS / HERO_SRC, BUILD / "hero.png", 1800)
+    resize(ASSETS / FAVICON_SRC, BUILD / "favicon.png", 256)
 
 
 def data_uri(path: pathlib.Path) -> str:
@@ -78,7 +65,7 @@ def main() -> None:
         .replace("{{LOGO_DARK}}", data_uri(BUILD / "logo_dark.png"))
         .replace("{{LOGO_LIGHT}}", data_uri(BUILD / "logo_light.png"))
         .replace("{{HERO}}", data_uri(BUILD / "hero.png"))
-        .replace("{{FAVICON}}", "data:image/svg+xml;base64," + base64.b64encode(FAVICON_SVG.encode()).decode())
+        .replace("{{FAVICON}}", data_uri(BUILD / "favicon.png"))
     )
     out = HERE / "portfolio.html"
     out.write_text(html, encoding="utf-8")
@@ -91,8 +78,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Moonlake — Robotics deployment with simulation & digital twins</title>
-<link rel="icon" type="image/svg+xml" href="{{FAVICON}}">
+<title>Moonlake | Robotics simulation & digital twins</title>
+<link rel="icon" type="image/png" href="{{FAVICON}}">
 <style>
   :root {
     --paper: #f9f8f3;        /* matched exactly to the hero image background */
@@ -257,7 +244,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     opacity: 0; transition: opacity .25s ease; pointer-events: none;
   }
   .g-stage:hover .g-zoom { opacity: 1; }
-  /* input inset — shows the source the output was generated from */
+  /* input inset: shows the source the output was generated from */
   .g-inset {
     position: absolute; bottom: 14px; left: 14px; z-index: 2; margin: 0;
     width: 30%; max-width: 172px; border: 1px solid rgba(13,13,14,.18); border-radius: 3px;
@@ -464,9 +451,9 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="hero-copy">
     <div class="inner">
       <div class="copy-block">
-        <p class="kicker">Moonlake — simulation &amp; digital twins for robotics OEMs</p>
+        <p class="kicker">Simulation &amp; digital twins for robotics OEMs</p>
         <h1>Accelerating robotics deployment with simulation and digital twins.</h1>
-        <p class="lead">Moonlake helps robotics OEMs demo robots in customer spaces, validate deployments before install, and prep faster — turning real sites and assets into simulation-ready digital twins, scenes, and blend files.</p>
+        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. OEMs use them to demo robots in customer spaces and validate deployments before install.</p>
         <div class="actions">
           <a class="btn solid" href="#examples">See the lookbook</a>
           <a class="btn outline" href="mailto:studios@moonlake.ai">Contact</a>
@@ -502,7 +489,7 @@ TEMPLATE = r"""<!DOCTYPE html>
         <h2>Assets &amp; scenes Moonlake delivers.</h2>
       </div>
     </div>
-    <p class="sec-sub">Input to output: a customer source — an image, video, or point cloud — turned into a simulation-ready asset, scene, and blend file. A growing lookbook of generated work.</p>
+    <p class="sec-sub">Each example is a customer source (image, video, or point cloud) turned into a simulation-ready asset, scene, and blend file.</p>
 
     <div class="gallery" id="gallery">
       <div class="g-main">
@@ -535,8 +522,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="caps" id="capabilities">
   <div class="wrap">
     <span class="kicker">What Moonlake delivers</span>
-    <h2>Outputs that de-risk every deployment.</h2>
-    <p class="sec-sub">Moonlake turns the sources customers already have into simulation-ready assets, scenes, and blend files — connected to manufacturers and factories worldwide. You receive deliverables, not another tool to learn.</p>
+    <h2>Outputs that de-risk deployment.</h2>
+    <p class="sec-sub">Moonlake turns customer sources into simulation-ready assets, scenes, and blend files. Connected to manufacturers and factories worldwide.</p>
     <div class="cap-grid" id="cap-grid"></div>
   </div>
 </section>
@@ -546,7 +533,7 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="wrap">
     <span class="kicker">How it works</span>
     <h2>From your source to delivered assets.</h2>
-    <p class="sec-sub">Send the inputs you already have — images, video, point clouds, or sensor data. Moonlake turns them into physically validated, simulation-ready assets and scenes.</p>
+    <p class="sec-sub">Send an image, video, point cloud, or sensor data. Moonlake returns physically validated, simulation-ready assets and scenes.</p>
     <div class="steps" id="steps"></div>
   </div>
 </section>
@@ -554,14 +541,14 @@ TEMPLATE = r"""<!DOCTYPE html>
 <!-- 5. Where it fits -->
 <section class="usecases" id="usecases">
   <div class="wrap">
-    <span class="kicker">Where it fits — robotics OEMs</span>
+    <span class="kicker">For robotics OEMs</span>
     <h2>For OEMs deploying robots into customer spaces.</h2>
     <div class="uc-grid" id="uc-grid"></div>
   </div>
 </section>
 
 <footer><div class="wrap foot">
-  <span>© 2026 Moonlake — Simulation infrastructure for robotics deployment.</span>
+  <span>© 2026 Moonlake. Simulation infrastructure for robotics deployment.</span>
   <span><a href="https://moonlakeai.com">moonlakeai.com</a></span>
 </div></footer>
 
@@ -577,14 +564,14 @@ TEMPLATE = r"""<!DOCTYPE html>
 
 <script>
 /* ============================================================
-   IMAGES — base64 data URIs, injected at build time
+   IMAGES: base64 data URIs, injected at build time
    ============================================================ */
 const IMAGES = {
 /*__IMAGES__*/
 };
 
 /* ============================================================
-   CONFIG — data-driven content.
+   CONFIG: data-driven content.
    `assets` drives the lookbook; each entry pairs a customer source
    (inImg) with the generated output, plus its deliverables.
    ============================================================ */
@@ -593,7 +580,7 @@ const assets = [
     img: "twin_simrobot",
     inImg: "in_appliance",
     name: "Articulated appliance twin",
-    desc: "A customer appliance and robot arm, reconstructed from a single product photo and calibrated in NVIDIA Newton — ready to demo and validate manipulation before anything ships.",
+    desc: "A customer appliance and robot arm reconstructed from a single product photo and calibrated in NVIDIA Newton for manipulation testing.",
     source: "Single product photo",
     engine: "NVIDIA Newton",
     output: "Articulated, sim-ready twin",
@@ -604,7 +591,7 @@ const assets = [
     img: "twin_conveyor",
     inImg: "in_dock",
     name: "Modular conveyor line",
-    desc: "A conveyor system rebuilt as a configurable, re-usable 3D asset with inferred structure — drop-in ready for line layouts and throughput simulation.",
+    desc: "A conveyor system rebuilt as a configurable 3D asset with inferred structure, ready for line layouts and throughput simulation.",
     source: "Site photo",
     engine: "Isaac Sim / Newton",
     output: "Procedural, editable asset",
@@ -615,7 +602,7 @@ const assets = [
     img: "twin_cell",
     inImg: "in_factory",
     name: "Pick-and-place work cell",
-    desc: "A full pick-and-place cell — robot, pallets, and racking — reconstructed and calibrated so the deployment can be validated against the real space before install.",
+    desc: "A pick-and-place cell (robot, pallets, and racking) reconstructed and calibrated for validation against the real space before install.",
     source: "Factory photo / point cloud",
     engine: "NVIDIA Isaac Sim",
     output: "Validated work-cell twin",
@@ -626,8 +613,8 @@ const assets = [
 
 const capabilities = [
   { t: "Digital twins of customer spaces", d: "Turn a customer's real site into a sim-ready twin for demos and pre-deployment validation." },
-  { t: "From the inputs you already have", d: "Images, video, point clouds, or sensor data — no special capture rig required." },
-  { t: "Assets, scenes & blend files", d: "We deliver finished outputs — .blend and USD, sim-ready — not a tool to operate." },
+  { t: "Accepted inputs", d: "Images, video, point clouds, or sensor data." },
+  { t: "Assets, scenes & blend files", d: "Finished .blend and USD files, sim-ready." },
   { t: "Articulation & physics inference", d: "Joints, articulation, and physical properties inferred for manipulable assets." },
   { t: "Physics-engine validated", d: "Calibrated and validated in NVIDIA Isaac, Newton, and MuJoCo." },
   { t: "Faster deployment prep", d: "Cut asset-creation and deployment-prep time from weeks to days." },
@@ -636,7 +623,7 @@ const capabilities = [
 const pipeline = [
   { h: "You send a source", p: "An image, video, point cloud, or sensor data of the real asset or space." },
   { h: "We build it in 3D", p: "Reconstructed into 3D with inferred articulation and physics." },
-  { h: "We calibrate & validate", p: "Calibrated in a physics engine — Isaac, Newton, or MuJoCo — until it's physically validated." },
+  { h: "We calibrate & validate", p: "Calibrated and physically validated in Isaac, Newton, or MuJoCo." },
   { h: "You receive deliverables", p: "Sim-ready assets, scenes, and blend files for demos, validation, and deployment prep." },
 ];
 
@@ -664,11 +651,11 @@ function renderGallery(i) {
   active = (i + assets.length) % assets.length;
   const a = assets[active];
   gImg.src = IMAGES[a.img];
-  gImg.alt = a.name + " — generated output";
+  gImg.alt = a.name + " output";
   const inset = $("#g-inset");
   if (a.inImg && IMAGES[a.inImg]) {
     $("#g-in-img").src = IMAGES[a.inImg];
-    $("#g-in-img").alt = a.name + " — input source";
+    $("#g-in-img").alt = a.name + " input";
     inset.classList.remove("hide");
   } else {
     inset.classList.add("hide");
@@ -743,12 +730,12 @@ if (contactForm) {
     const message = (data.get("message") || "").trim();
     const lines = [
       `Name: ${name}`,
-      `Company: ${company || "—"}`,
+      `Company: ${company || "-"}`,
       `Email: ${email}`,
       "",
       message || "(no message provided)",
     ];
-    const subject = `Moonlake pilot — ${name || "new inquiry"}`;
+    const subject = `Moonlake pilot: ${name || "new inquiry"}`;
     const href = `mailto:studios@moonlake.ai?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join("\n"))}`;
     window.location.href = href;
     const note = $("#cf-note");
