@@ -19,6 +19,9 @@ IMAGE_FILES = {
     "twin_simrobot": "twin_simrobot.png",
     "twin_conveyor": "twin_conveyor.png",
     "twin_cell": "twin_cell.png",
+    "in_appliance": "in_appliance.png",
+    "in_factory": "in_factory.png",
+    "in_dock": "in_dock.png",
 }
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
@@ -238,6 +241,18 @@ TEMPLATE = r"""<!DOCTYPE html>
     opacity: 0; transition: opacity .25s ease; pointer-events: none;
   }
   .g-stage:hover .g-zoom { opacity: 1; }
+  /* input inset — shows the source the output was generated from */
+  .g-inset {
+    position: absolute; bottom: 14px; left: 14px; z-index: 2; margin: 0;
+    width: 30%; max-width: 172px; border: 1px solid rgba(13,13,14,.18); border-radius: 3px;
+    overflow: hidden; box-shadow: 0 6px 18px rgba(13,13,14,.28); background: var(--paper);
+  }
+  .g-inset img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+  .g-inset figcaption {
+    position: absolute; top: 0; left: 0; font-size: 9px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--paper); background: rgba(13,13,14,.82); padding: 3px 7px;
+  }
+  .g-inset.hide { display: none; }
   /* caption column */
   .g-caption { display: flex; flex-direction: column; }
   .g-index { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: var(--ink-3); }
@@ -418,10 +433,10 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Moonlake"><img src="{{LOGO_DARK}}" alt="Moonlake"></a>
     <nav>
-      <a href="#examples">Results</a>
+      <a href="#examples">Lookbook</a>
       <a href="#capabilities">Capabilities</a>
       <a href="#how">How it works</a>
-      <a href="#pilot">Contact</a>
+      <a href="mailto:studios@moonlake.ai">Contact</a>
     </nav>
   </div>
 </div>
@@ -433,12 +448,12 @@ TEMPLATE = r"""<!DOCTYPE html>
   <div class="hero-copy">
     <div class="inner">
       <div class="copy-block">
-        <p class="kicker">Moonlake — AI infrastructure for world simulation</p>
+        <p class="kicker">Moonlake — simulation &amp; digital twins for robotics OEMs</p>
         <h1>Accelerating robotics deployment with simulation and digital twins.</h1>
-        <p class="lead">Moonlake helps robotics companies identify the highest-ROI factory tasks, evaluate on real-world factory data, and de-risk deployment with simulation-ready digital twins.</p>
+        <p class="lead">Moonlake helps robotics OEMs demo robots in customer spaces, validate deployments before install, and prep faster — turning real sites and assets into simulation-ready digital twins, scenes, and blend files.</p>
         <div class="actions">
-          <a class="btn solid" href="#pilot">Contact</a>
-          <a class="btn outline" href="#examples">See results</a>
+          <a class="btn solid" href="#examples">See the lookbook</a>
+          <a class="btn outline" href="mailto:studios@moonlake.ai">Contact</a>
         </div>
       </div>
     </div>
@@ -448,11 +463,12 @@ TEMPLATE = r"""<!DOCTYPE html>
 <!-- credibility logo strip -->
 <section class="logos">
   <div class="wrap">
-    <p class="logos-label">Built by talent from the world's leading AI &amp; robotics labs</p>
+    <p class="logos-label">Built by researchers &amp; engineers from</p>
     <ul class="logos-row">
       <li>NVIDIA</li>
       <li>DeepMind</li>
       <li>Anthropic</li>
+      <li>Stanford</li>
       <li>Meta</li>
       <li>Waymo</li>
       <li>Autodesk</li>
@@ -461,21 +477,25 @@ TEMPLATE = r"""<!DOCTYPE html>
   </div>
 </section>
 
-<!-- 2. Customer results gallery -->
+<!-- 2. Lookbook -->
 <section class="work" id="examples">
   <div class="wrap">
     <div class="work-head">
       <div>
-        <span class="kicker">Customer results</span>
-        <h2>What Moonlake builds for customers.</h2>
+        <span class="kicker">Lookbook</span>
+        <h2>Assets &amp; scenes Moonlake delivers.</h2>
       </div>
     </div>
-    <p class="sec-sub">Sim-ready digital twins and validated environments, generated from a single customer image, video, or point cloud. Early examples shown — more on request.</p>
+    <p class="sec-sub">Input to output: a customer source — an image, video, or point cloud — turned into a simulation-ready asset, scene, and blend file. A growing lookbook of generated work.</p>
 
     <div class="gallery" id="gallery">
       <div class="g-main">
         <figure class="g-stage" id="g-stage">
           <span class="g-tag" id="g-tag"></span>
+          <figure class="g-inset" id="g-inset">
+            <img id="g-in-img" alt="" draggable="false">
+            <figcaption>Input</figcaption>
+          </figure>
           <img id="g-img" alt="" draggable="false">
           <span class="g-zoom" aria-hidden="true">Click to enlarge</span>
         </figure>
@@ -498,9 +518,9 @@ TEMPLATE = r"""<!DOCTYPE html>
 <!-- 3. What Moonlake does -->
 <section class="caps" id="capabilities">
   <div class="wrap">
-    <span class="kicker">What Moonlake does</span>
-    <h2>Built to de-risk robotics deployment.</h2>
-    <p class="sec-sub">Moonlake is the simulation infrastructure layer between a real factory and a validated robot deployment — turning sites and assets into sim-ready digital twins, on demand and at scale.</p>
+    <span class="kicker">What Moonlake delivers</span>
+    <h2>Outputs that de-risk every deployment.</h2>
+    <p class="sec-sub">Moonlake turns the sources customers already have into simulation-ready assets, scenes, and blend files — connected to manufacturers and factories worldwide. You receive deliverables, not another tool to learn.</p>
     <div class="cap-grid" id="cap-grid"></div>
   </div>
 </section>
@@ -509,8 +529,8 @@ TEMPLATE = r"""<!DOCTYPE html>
 <section class="process" id="how">
   <div class="wrap">
     <span class="kicker">How it works</span>
-    <h2>From one image to a validated digital twin.</h2>
-    <p class="sec-sub">Moonlake's AI simulation engineer produces a fully, physically validated simulation from a single image, video, or point cloud.</p>
+    <h2>From your source to delivered assets.</h2>
+    <p class="sec-sub">Send the inputs you already have — images, video, point clouds, or sensor data. Moonlake turns them into physically validated, simulation-ready assets and scenes.</p>
     <div class="steps" id="steps"></div>
   </div>
 </section>
@@ -518,44 +538,11 @@ TEMPLATE = r"""<!DOCTYPE html>
 <!-- 5. Where it fits -->
 <section class="usecases" id="usecases">
   <div class="wrap">
-    <span class="kicker">Where it fits</span>
-    <h2>For robotics teams shipping into real factories.</h2>
+    <span class="kicker">Where it fits — robotics OEMs</span>
+    <h2>For OEMs deploying robots into customer spaces.</h2>
     <div class="uc-grid" id="uc-grid"></div>
   </div>
 </section>
-
-<!-- 7. Pilot CTA -->
-<section class="cta" id="pilot">
-  <div class="wrap">
-    <img src="{{LOGO_LIGHT}}" alt="Moonlake">
-    <h2>See Moonlake on your<br>factory floor.</h2>
-    <p>We're working with robotics companies and OEMs to de-risk deployments. Share a site, asset, or task and we'll show how Moonlake turns it into a validated, sim-ready digital twin.</p>
-    <form class="cta-form" id="contact-form">
-      <div class="row">
-        <div class="cta-field">
-          <label for="cf-name">Name</label>
-          <input id="cf-name" name="name" type="text" autocomplete="name" required>
-        </div>
-        <div class="cta-field">
-          <label for="cf-company">Company</label>
-          <input id="cf-company" name="company" type="text" autocomplete="organization">
-        </div>
-      </div>
-      <div class="cta-field">
-        <label for="cf-email">Work email</label>
-        <input id="cf-email" name="email" type="email" autocomplete="email" required>
-      </div>
-      <div class="cta-field">
-        <label for="cf-msg">What are you deploying?</label>
-        <textarea id="cf-msg" name="message" placeholder="Tell us about the deployment, site, or task you'd like to simulate."></textarea>
-      </div>
-      <button class="btn" type="submit">Send message</button>
-      <p class="cta-note" id="cf-note" role="status"></p>
-    </form>
-    <p class="cta-fine">Best fit for robotics companies, OEMs, and manufacturers evaluating automation on real factory data.</p>
-  </div>
-</section>
-
 
 <footer><div class="wrap foot">
   <span>© 2026 Moonlake — Simulation infrastructure for robotics deployment.</span>
@@ -582,62 +569,68 @@ const IMAGES = {
 
 /* ============================================================
    CONFIG — data-driven content.
-   `assets` drives the results gallery; each entry is one customer
-   output, with its input, physics engine, and output type.
+   `assets` drives the lookbook; each entry pairs a customer source
+   (inImg) with the generated output, plus its deliverables.
    ============================================================ */
 const assets = [
   {
     img: "twin_simrobot",
-    name: "Articulated manipulation twin",
-    desc: "A customer appliance and robot arm reconstructed as a physically validated scene and calibrated in NVIDIA Newton — ready for manipulation-policy testing before anything touches the floor.",
-    input: "Single product image",
+    inImg: "in_appliance",
+    name: "Articulated appliance twin",
+    desc: "A customer appliance and robot arm, reconstructed from a single product photo and calibrated in NVIDIA Newton — ready to demo and validate manipulation before anything ships.",
+    source: "Single product photo",
     engine: "NVIDIA Newton",
     output: "Articulated, sim-ready twin",
+    deliverables: ".blend · USD · sim-ready",
     status: "Sim output",
   },
   {
     img: "twin_conveyor",
+    inImg: "in_dock",
     name: "Modular conveyor line",
     desc: "A conveyor system rebuilt as a configurable, re-usable 3D asset with inferred structure — drop-in ready for line layouts and throughput simulation.",
-    input: "Reference image",
+    source: "Site photo",
     engine: "Isaac Sim / Newton",
     output: "Procedural, editable asset",
+    deliverables: ".blend · USD · configurable",
     status: "Sim output",
   },
   {
     img: "twin_cell",
+    inImg: "in_factory",
     name: "Pick-and-place work cell",
-    desc: "A full pick-and-place cell — robot, pallets, and racking — reconstructed and calibrated so policies can be validated against real-world factory data before deployment.",
-    input: "Factory video / point cloud",
+    desc: "A full pick-and-place cell — robot, pallets, and racking — reconstructed and calibrated so the deployment can be validated against the real space before install.",
+    source: "Factory photo / point cloud",
     engine: "NVIDIA Isaac Sim",
     output: "Validated work-cell twin",
+    deliverables: ".blend · USD · validated",
     status: "Sim output",
   },
 ];
 
 const capabilities = [
-  { t: "Digital twins from a single input", d: "Turn one image, video, or point cloud into a sim-ready 3D twin of a space or asset." },
-  { t: "Articulation & physics inference", d: "Automatically infer joints, articulation, and physical properties for manipulable assets." },
-  { t: "Physics-engine calibration", d: "Autonomously calibrate twins in NVIDIA Isaac, Newton, and MuJoCo." },
-  { t: "Highest-ROI task identification", d: "Pinpoint the factory tasks where automation returns the most, fastest." },
-  { t: "Evaluate on real factory data", d: "Validate robot policies against real-world factory data before deployment." },
-  { t: "Procedural & re-usable", d: "Everything is generated procedurally — configurable, editable, and re-usable." },
+  { t: "Digital twins of customer spaces", d: "Turn a customer's real site into a sim-ready twin for demos and pre-deployment validation." },
+  { t: "From the inputs you already have", d: "Images, video, point clouds, or sensor data — no special capture rig required." },
+  { t: "Assets, scenes & blend files", d: "We deliver finished outputs — .blend and USD, sim-ready — not a tool to operate." },
+  { t: "Articulation & physics inference", d: "Joints, articulation, and physical properties inferred for manipulable assets." },
+  { t: "Physics-engine validated", d: "Calibrated and validated in NVIDIA Isaac, Newton, and MuJoCo." },
+  { t: "Faster deployment prep", d: "Cut asset-creation and deployment-prep time from weeks to days." },
 ];
 
 const pipeline = [
-  { h: "Single customer input", p: "Start from one image, video, or point cloud of the real asset or space." },
-  { h: "Auto-build in 3D", p: "Moonlake reconstructs the scene and infers articulation and physics — like a technical artist building sim-ready assets." },
-  { h: "Calibrate in a physics engine", p: "The agent autonomously calibrates the twin in the cloud across Isaac, Newton, and MuJoCo." },
-  { h: "Validated, editable output", p: "A physically validated, sim-ready digital twin you can adjust procedurally and re-use." },
+  { h: "You send a source", p: "An image, video, point cloud, or sensor data of the real asset or space." },
+  { h: "We build it in 3D", p: "Reconstructed into 3D with inferred articulation and physics." },
+  { h: "We calibrate & validate", p: "Calibrated in a physics engine — Isaac, Newton, or MuJoCo — until it's physically validated." },
+  { h: "You receive deliverables", p: "Sim-ready assets, scenes, and blend files for demos, validation, and deployment prep." },
 ];
 
 const useCases = [
-  "Robotics companies de-risking new deployments",
+  "Demoing robots in a customer's real space",
+  "Pre-deployment visualization & validation",
+  "Internal and customer-facing digital twins",
+  "Faster deployment prep and asset creation",
   "Validating manipulation policies before install",
-  "Identifying the highest-ROI tasks to automate",
-  "Turning brownfield factories into twins — no redesign",
-  "Evaluating robots on real-world factory data",
-  "Cutting deployment time, downtime, and labor cost",
+  "Connected to manufacturers & factories worldwide",
 ];
 
 /* ============================================================
@@ -655,16 +648,25 @@ function renderGallery(i) {
   active = (i + assets.length) % assets.length;
   const a = assets[active];
   gImg.src = IMAGES[a.img];
-  gImg.alt = a.name + " — simulation output";
+  gImg.alt = a.name + " — generated output";
+  const inset = $("#g-inset");
+  if (a.inImg && IMAGES[a.inImg]) {
+    $("#g-in-img").src = IMAGES[a.inImg];
+    $("#g-in-img").alt = a.name + " — input source";
+    inset.classList.remove("hide");
+  } else {
+    inset.classList.add("hide");
+  }
   $("#g-tag").textContent = a.status;
   $("#g-num").textContent = String(active + 1).padStart(2, "0");
   $("#g-total").textContent = String(assets.length).padStart(2, "0");
   $("#g-title").textContent = a.name;
   $("#g-desc").textContent = a.desc;
   $("#g-specs").innerHTML = [
-    ["Input", a.input],
-    ["Physics engine", a.engine],
+    ["Source", a.source],
     ["Output", a.output],
+    ["Physics engine", a.engine],
+    ["Deliverables", a.deliverables],
   ].map(([k, v]) => `<div class="row"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
   [...gRail.children].forEach((b, k) => b.setAttribute("aria-selected", k === active));
 }
