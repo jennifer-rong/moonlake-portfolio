@@ -24,6 +24,8 @@ IMAGE_FILES = {
     "in_dock": "in_dock.png",
     "in_s6": "in_s6.png",
     "in_s6b": "in_s6b.png",
+    "in_s7": "in_s7.png",
+    "out_s7": "out_s7.png",
 }
 VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4"]        # referenced (not base64) outputs
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
@@ -53,8 +55,8 @@ def prepare() -> None:
     resize(ASSETS / HERO_SRC, BUILD / "hero.png", 1800)
     resize(ASSETS / FAVICON_SRC, BUILD / "favicon.png", 256)
     # padded inputs are already at the video's aspect at native res; keep them sharp
-    (BUILD / "in_s6.png").write_bytes((ASSETS / "in_s6.png").read_bytes())
-    (BUILD / "in_s6b.png").write_bytes((ASSETS / "in_s6b.png").read_bytes())
+    for f in ("in_s6.png", "in_s6b.png", "in_s7.png", "out_s7.png"):
+        (BUILD / f).write_bytes((ASSETS / f).read_bytes())
 
 
 def data_uri(path: pathlib.Path) -> str:
@@ -356,15 +358,16 @@ TEMPLATE = r"""<!DOCTYPE html>
     backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   }
   .flip-tag--out { color: var(--paper); background: rgba(13,13,14,.82); }
+  /* faint curved-arrow affordance: clicking the card flips it */
   .flip-hint {
-    position: absolute; bottom: 14px; right: 14px; z-index: 4; pointer-events: none;
-    display: inline-flex; align-items: center; gap: 7px;
-    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--paper); background: rgba(13,13,14,.8); padding: 8px 13px; border-radius: 100px;
-    transition: background .2s ease;
+    position: absolute; bottom: 13px; right: 13px; z-index: 4; pointer-events: none;
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; line-height: 1; color: rgba(255,255,255,.92);
+    background: rgba(13,13,14,.28); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    opacity: .6; transition: opacity .2s ease, background .2s ease;
   }
-  .flip-hint-ic { font-size: 13px; line-height: 1; }
-  .flip:hover .flip-hint { background: var(--ink); }
+  .flip:hover .flip-hint { opacity: 1; background: rgba(13,13,14,.5); }
   .flip:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
   /* caption column (right): title, description, specs, example nav */
   .g-caption { display: flex; flex-direction: column; }
@@ -608,7 +611,7 @@ TEMPLATE = r"""<!DOCTYPE html>
               <video id="g-out-vid" muted loop playsinline preload="metadata"></video>
             </div>
           </div>
-          <span class="flip-hint" id="flip-hint"><span class="flip-hint-ic">&#8635;</span> <span id="flip-hint-tx">Flip to output</span></span>
+          <span class="flip-hint" aria-hidden="true">&#10227;</span>
         </div>
 
         <div class="g-caption">
@@ -710,15 +713,15 @@ const assets = [
     status: "Sim output",
   },
   {
-    img: "twin_cell",
-    inImg: "in_factory",
-    name: "Pick-and-place work cell",
-    desc: "A pick-and-place cell (robot, pallets, and racking) reconstructed and calibrated for validation against the real space before install.",
-    source: "Factory photo / point cloud",
-    engine: "NVIDIA Isaac Sim",
-    output: "Validated work-cell twin",
-    deliverables: ".blend · USD · validated",
-    status: "Sim output",
+    img: "out_s7",
+    inImg: "in_s7",
+    name: "Procedural conveyor generator",
+    desc: "Conveyors rebuilt as fully procedural assets. Every dimension, rail, and motor is adjustable, and the result is configurable and re-usable across layouts.",
+    source: "Reference / spec",
+    engine: "Isaac Sim / Blender",
+    output: "Procedural, editable asset",
+    deliverables: ".blend · USD · configurable",
+    status: "Procedural asset",
   },
 ];
 
@@ -748,7 +751,6 @@ const flip = $("#flip");
 const inImg = $("#g-in-img");
 const outImg = $("#g-out-img");
 const outVid = $("#g-out-vid");
-const hintTx = $("#flip-hint-tx");
 let active = 0;
 let flipped = false;
 
@@ -762,7 +764,6 @@ function setFlip(state) {
   flipped = state;
   flip.classList.toggle("flipped", flipped);
   flip.setAttribute("aria-pressed", String(flipped));
-  hintTx.textContent = flipped ? "Flip to input" : "Flip to output";
   syncVideo();
 }
 
@@ -795,8 +796,7 @@ function renderGallery(i) {
 }
 
 function goTo(i) {
-  setFlip(false);                 // each new example starts on its input face
-  renderGallery(i);
+  renderGallery(i);               // keep the current flipped side when switching examples
 }
 
 $("#g-prev").addEventListener("click", () => goTo(active - 1));
