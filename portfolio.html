@@ -178,7 +178,7 @@
     gap: 28px; flex-wrap: wrap; margin-bottom: 8px;
   }
   .work-head h2 {
-    font-size: clamp(30px, 3.6vw, 46px); font-weight: 800;
+    font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
     letter-spacing: -.035em; line-height: 1.02; margin: 12px 0 0; max-width: 18ch;
   }
   /* ---- credibility logo marquee ---- */
@@ -350,8 +350,8 @@
   @media (min-width: 821px) and (max-height: 820px) { .caps { justify-content: flex-start; } }
   .caps .kicker { display: block; margin-bottom: 10px; }
   .caps h2 {
-    font-size: clamp(26px, 3vw, 38px); font-weight: 800;
-    letter-spacing: -.035em; margin: 0; max-width: 22ch; line-height: 1.04;
+    font-size: clamp(28px, 3.4vw, 44px); font-weight: 800;
+    letter-spacing: -.035em; margin: 0; max-width: 22ch; line-height: 1.02;
   }
   /* metrics (claims, to validate) */
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 22px; border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair); }
@@ -436,7 +436,7 @@
         <p class="kicker">Moonlake - Accelerating robotics deployment</p>
         <h1>Accelerated Pipelines</h1>
         <p class="hero-tagline">Simulation <span class="sep">|</span> Digital Twins <span class="sep">|</span> Robotics</p>
-        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins, scenes, and blend files. Teams use them to demo robots in real spaces, validate deployments before install, and cut prep time.</p>
+        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins and scenes. Demo robots in real spaces, validate deployments before install, and cut prep time.</p>
         <div class="actions">
           <a class="btn solid" href="mailto:studios@moonlake.ai?subject=Demo%20request">Book a Demo</a>
           <a class="btn outline" href="#how">How it works</a>
@@ -510,7 +510,7 @@
 <section class="caps" id="capabilities">
   <div class="wrap">
     <span class="kicker">Capabilities</span>
-    <h2>From inputs to validated twins.</h2>
+    <h2>Built for deployment.</h2>
     <div class="stats">
       <div class="stat"><div class="stat-num">20%</div><div class="stat-lbl">less deployment time</div></div>
       <div class="stat"><div class="stat-num">100h <span class="stat-to">&rarr;</span> 20h</div><div class="stat-lbl">for detailed asset creation</div></div>
@@ -839,10 +839,11 @@ document.addEventListener("keydown", (e) => {
 
   const clamp01 = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
   const clock = new THREE.Clock();
+  const T0 = 8;                        // start mid-cycle so shapes begin spread out, not clustered
   function frame() {
     requestAnimationFrame(frame);
     if (!visible) return;
-    const t = clock.getElapsedTime();
+    const t = clock.getElapsedTime() + T0;
     cx += (tx - cx) * 0.02; cy += (ty - cy) * 0.02;     // viscous pointer lag
     for (const g of shapes) {
       const d = g.userData;
