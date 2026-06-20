@@ -238,10 +238,11 @@
   /* single side-by-side video example (no flip): card matches the video aspect */
   .flip-single {
     position: absolute; inset: 0; z-index: 5; display: none;
-    width: 100%; height: 100%; object-fit: cover; border-radius: 6px;
+    width: 100%; height: 100%; object-fit: contain; border-radius: 6px;
     border: 1px solid var(--hair); background: var(--paper-2);
   }
-  .flip.is-single { cursor: default; aspect-ratio: 1440 / 1280; width: auto; height: clamp(300px, 50vh, 500px); justify-self: center; }
+  /* same card box as examples 01/02 (no taller); the video is letterboxed within it */
+  .flip.is-single { cursor: default; }
   .flip.is-single .flip-single { display: block; }
   .flip.is-single .flip-hint { display: none; }
   .flip:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
