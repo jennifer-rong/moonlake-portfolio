@@ -27,6 +27,21 @@ LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light su
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
 
+# Favicon: the Moonlake cube + crescent mark, as a crisp inline SVG (sharp at any size)
+FAVICON_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    '<rect width="64" height="64" rx="7" fill="#ffffff"/>'
+    '<g stroke="#0d0d0e" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round">'
+    '<path d="M9 24 L43 24 L43 58 L9 58 Z"/>'
+    '<path d="M9 24 L21 12 L55 12 L43 24"/>'
+    '<path d="M43 24 L55 12 L55 46 L43 58"/>'
+    '</g>'
+    '<path d="M9 24 L21 12 L21 24 Z" fill="#0d0d0e"/>'
+    '<path d="M43 58 L55 46 L55 58 Z" fill="#0d0d0e"/>'
+    '<path transform="rotate(20 28 41)" d="M28 26 A15 15 0 1 0 28 56 A11.5 11.5 0 1 1 28 26 Z" fill="#0d0d0e"/>'
+    '</svg>'
+)
+
 
 def b64(path: pathlib.Path) -> str:
     return base64.b64encode(path.read_bytes()).decode("ascii")
@@ -63,6 +78,7 @@ def main() -> None:
         .replace("{{LOGO_DARK}}", data_uri(BUILD / "logo_dark.png"))
         .replace("{{LOGO_LIGHT}}", data_uri(BUILD / "logo_light.png"))
         .replace("{{HERO}}", data_uri(BUILD / "hero.png"))
+        .replace("{{FAVICON}}", "data:image/svg+xml;base64," + base64.b64encode(FAVICON_SVG.encode()).decode())
     )
     out = HERE / "portfolio.html"
     out.write_text(html, encoding="utf-8")
@@ -76,7 +92,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Moonlake — Robotics deployment with simulation & digital twins</title>
-<link rel="icon" href="{{LOGO_DARK}}">
+<link rel="icon" type="image/svg+xml" href="{{FAVICON}}">
 <style>
   :root {
     --paper: #f9f8f3;        /* matched exactly to the hero image background */
