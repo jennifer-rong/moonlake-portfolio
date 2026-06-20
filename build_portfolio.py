@@ -24,10 +24,8 @@ IMAGE_FILES = {
     "in_dock": "in_dock.png",
     "in_s6": "in_s6.png",
     "in_s6b": "in_s6b.png",
-    "in_s7": "in_s7.png",
-    "out_s7": "out_s7.png",
 }
-VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4"]        # referenced (not base64) outputs
+VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4", "s7_sidebyside.mp4"]   # referenced (not base64)
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
@@ -55,7 +53,7 @@ def prepare() -> None:
     resize(ASSETS / HERO_SRC, BUILD / "hero.png", 1800)
     resize(ASSETS / FAVICON_SRC, BUILD / "favicon.png", 256)
     # padded inputs are already at the video's aspect at native res; keep them sharp
-    for f in ("in_s6.png", "in_s6b.png", "in_s7.png", "out_s7.png"):
+    for f in ("in_s6.png", "in_s6b.png"):
         (BUILD / f).write_bytes((ASSETS / f).read_bytes())
 
 
@@ -367,6 +365,15 @@ TEMPLATE = r"""<!DOCTYPE html>
     opacity: .6; transition: opacity .2s ease, background .2s ease;
   }
   .flip:hover .flip-hint { opacity: 1; background: rgba(13,13,14,.5); }
+  /* single side-by-side video example (no flip): card matches the video aspect */
+  .flip-single {
+    position: absolute; inset: 0; z-index: 5; display: none;
+    width: 100%; height: 100%; object-fit: cover; border-radius: 6px;
+    border: 1px solid var(--hair); background: var(--paper-2);
+  }
+  .flip.is-single { cursor: default; aspect-ratio: 1440 / 1280; width: auto; height: clamp(300px, 50vh, 500px); justify-self: center; }
+  .flip.is-single .flip-single { display: block; }
+  .flip.is-single .flip-hint { display: none; }
   .flip:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
   /* caption column (right): title, description, specs, example nav */
   .g-caption { display: flex; flex-direction: column; }
@@ -611,6 +618,7 @@ TEMPLATE = r"""<!DOCTYPE html>
             </div>
           </div>
           <span class="flip-hint" aria-hidden="true">&#10227;</span>
+          <video id="g-sbs" class="flip-single" muted loop playsinline aria-hidden="true"></video>
         </div>
 
         <div class="g-caption">
@@ -712,15 +720,14 @@ const assets = [
     status: "Sim output",
   },
   {
-    img: "out_s7",
-    inImg: "in_s7",
-    name: "Procedural conveyor generator",
-    desc: "Conveyors rebuilt as fully procedural assets. Every dimension, rail, and motor is adjustable, and the result is configurable and re-usable across layouts.",
-    source: "Reference / spec",
+    single: "assets/s7_sidebyside.mp4",
+    name: "Reconstructed work cell",
+    desc: "A robotic work cell rebuilt from a single capture. Layered point clouds reconstruct every object as an articulated, slider-controlled twin, exported to Isaac Sim. Input left, output right.",
+    source: "Image / video capture",
     engine: "Isaac Sim / Blender",
-    output: "Procedural, editable asset",
-    deliverables: ".blend · USD · configurable",
-    status: "Procedural asset",
+    output: "Articulated scene twin",
+    deliverables: ".blend · USD · articulated",
+    status: "Input → output",
   },
 ];
 
@@ -751,11 +758,14 @@ const flipInner = $("#flip-inner");
 const inImg = $("#g-in-img");
 const outImg = $("#g-out-img");
 const outVid = $("#g-out-vid");
+const sbs = $("#g-sbs");
 let active = 0;
 let flipped = false;
 
 function syncVideo() {
   const a = assets[active];
+  if (a.single) { sbs.play().catch(() => {}); outVid.pause(); return; }
+  sbs.pause();
   if (flipped && a.video) { outVid.play().catch(() => {}); }
   else { outVid.pause(); }
 }
@@ -770,17 +780,23 @@ function setFlip(state) {
 function renderGallery(i) {
   active = (i + assets.length) % assets.length;
   const a = assets[active];
-  inImg.src = IMAGES[a.inImg];
-  inImg.alt = a.name + " — input";
-  if (a.video) {
-    if (outVid.getAttribute("src") !== a.video) outVid.src = a.video;
-    outVid.style.display = "block";
-    outImg.style.display = "none";
+  // single side-by-side video example (no flip)
+  flip.classList.toggle("is-single", !!a.single);
+  if (a.single) {
+    if (sbs.getAttribute("src") !== a.single) sbs.src = a.single;
   } else {
-    outImg.src = IMAGES[a.img];
-    outImg.alt = a.name + " — output";
-    outImg.style.display = "block";
-    outVid.style.display = "none";
+    inImg.src = IMAGES[a.inImg];
+    inImg.alt = a.name + " — input";
+    if (a.video) {
+      if (outVid.getAttribute("src") !== a.video) outVid.src = a.video;
+      outVid.style.display = "block";
+      outImg.style.display = "none";
+    } else {
+      outImg.src = IMAGES[a.img];
+      outImg.alt = a.name + " — output";
+      outImg.style.display = "block";
+      outVid.style.display = "none";
+    }
   }
   $("#g-title").textContent = a.name;
   $("#g-desc").textContent = a.desc;
@@ -810,8 +826,9 @@ function goTo(i) {
 $("#g-prev").addEventListener("click", () => goTo(active - 1));
 $("#g-next").addEventListener("click", () => goTo(active + 1));
 
-flip.addEventListener("click", () => setFlip(!flipped));
+flip.addEventListener("click", () => { if (!assets[active].single) setFlip(!flipped); });
 flip.addEventListener("keydown", (e) => {
+  if (assets[active].single) return;
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setFlip(!flipped); }
 });
 
