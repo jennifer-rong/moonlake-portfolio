@@ -24,8 +24,11 @@ IMAGE_FILES = {
     "in_dock": "in_dock.png",
     "in_s6": "in_s6.png",
     "in_s6b": "in_s6b.png",
+    "tea_open": "tea_open.png",
+    "tea_closed": "tea_closed.png",
+    "tea_lid": "tea_lid.png",
 }
-VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4", "s7_sidebyside.mp4"]   # referenced (not base64)
+VIDEO_FILES = ["s6_output.mp4", "s6_left.mp4", "s7_sidebyside.mp4", "tea_showcase.mp4"]   # referenced (not base64)
 LOGO_DARK_SRC = "Black Logo on White BG.png"          # black lockup -> light surfaces
 LOGO_LIGHT_SRC = "moonlake_logo_white_transparent.png"  # white lockup -> dark surfaces
 HERO_SRC = "hero_wireframes.png"                      # full-width hero banner
@@ -348,6 +351,13 @@ TEMPLATE = r"""<!DOCTYPE html>
   .flip-back { transform: rotateY(180deg); }
   .flip-face img, .flip-face video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #g-out-vid { display: none; }
+  /* multi-image input: 3 reference photos arranged in the front face */
+  .flip-collage {
+    position: absolute; inset: 0; display: none; gap: 4px; padding: 4px; background: var(--paper-2);
+    grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  }
+  .flip-collage img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 2px; }
+  .flip-collage img:first-child { grid-row: 1 / 3; }   /* tall reference spans the left column */
   .flip-tag {
     position: absolute; top: 14px; left: 14px; z-index: 2;
     font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
@@ -611,6 +621,7 @@ TEMPLATE = r"""<!DOCTYPE html>
             <div class="flip-face flip-front">
               <span class="flip-tag">Input</span>
               <img id="g-in-img" alt="" draggable="false">
+              <div id="g-in-collage" class="flip-collage"></div>
             </div>
             <div class="flip-face flip-back">
               <span class="flip-tag flip-tag--out">Output</span>
@@ -730,6 +741,17 @@ const assets = [
     deliverables: ".blend · USD · articulated",
     status: "Input → output",
   },
+  {
+    inImgs: ["tea_open", "tea_closed", "tea_lid"],
+    video: "assets/tea_showcase.mp4",
+    name: "Photorealistic tea gift box",
+    desc: "A luxury leather tea box modeled code-natively from reference photos into a photorealistic, sim-ready 3D asset in Blender.",
+    source: "Reference photos + metadata",
+    engine: "Blender (code-native)",
+    output: "Photorealistic sim-ready asset",
+    deliverables: ".blend · USD · sim-ready",
+    status: "Sim output",
+  },
 ];
 
 const pipeline = [
@@ -757,6 +779,7 @@ const $ = (s) => document.querySelector(s);
 const flip = $("#flip");
 const flipInner = $("#flip-inner");
 const inImg = $("#g-in-img");
+const collage = $("#g-in-collage");
 const outImg = $("#g-out-img");
 const outVid = $("#g-out-vid");
 const sbs = $("#g-sbs");
@@ -786,8 +809,17 @@ function renderGallery(i) {
   if (a.single) {
     if (sbs.getAttribute("src") !== a.single) sbs.src = a.single;
   } else {
-    inImg.src = IMAGES[a.inImg];
-    inImg.alt = a.name + " — input";
+    // input front face: a 3-photo collage, or a single image
+    if (a.inImgs) {
+      collage.innerHTML = a.inImgs.map((k) => `<img src="${IMAGES[k]}" alt="${a.name} — input" draggable="false">`).join("");
+      collage.style.display = "grid";
+      inImg.style.display = "none";
+    } else {
+      inImg.src = IMAGES[a.inImg];
+      inImg.alt = a.name + " — input";
+      inImg.style.display = "block";
+      collage.style.display = "none";
+    }
     if (a.video) {
       if (outVid.getAttribute("src") !== a.video) outVid.src = a.video;
       outVid.style.display = "block";
