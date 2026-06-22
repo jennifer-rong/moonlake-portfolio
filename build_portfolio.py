@@ -184,10 +184,11 @@ TEMPLATE = r"""<!DOCTYPE html>
   /* floating rounded glass pill */
   .topbar {
     position: fixed; top: 18px; left: 0; right: 0; z-index: 50; padding: 0 24px;
+    display: flex; justify-content: center;
   }
   .topbar .wrap {
-    display: flex; align-items: center; justify-content: space-between;
-    height: 64px; padding: 0 16px 0 26px; max-width: var(--maxw); margin: 0 auto;
+    display: inline-flex; align-items: center; gap: clamp(28px, 4vw, 56px);
+    height: 58px; padding: 0 28px; width: auto; max-width: 100%; margin: 0;
     border-radius: 999px;
     background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.14));
     backdrop-filter: saturate(180%) blur(36px);
@@ -587,9 +588,9 @@ TEMPLATE = r"""<!DOCTYPE html>
     <div class="inner">
       <div class="copy-block">
         <p class="kicker">Moonlake - Accelerating robotics deployment</p>
-        <h1>Accelerating Pipelines</h1>
+        <h1>Accelerate Pipelines</h1>
         <p class="hero-tagline">Simulation <span class="sep">&middot;</span> Digital Twins <span class="sep">&middot;</span> Robotics</p>
-        <p class="lead">Moonlake turns real sites and assets into simulation-ready digital twins and scenes. Demo robots in real spaces, validate deployments before install, and cut prep time.</p>
+        <p class="lead">Turn sites and assets into simulation-ready digital twins and scenes. Demo robots in real spaces, validate deployments before install, and cut prep time.</p>
         <div class="actions">
           <a class="btn solid" href="mailto:studios@moonlake.ai?subject=Demo%20request">Book a Demo</a>
           <a class="btn outline" href="#how">How it works</a>
