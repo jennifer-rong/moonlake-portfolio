@@ -190,16 +190,15 @@ TEMPLATE = r"""<!DOCTYPE html>
     display: inline-flex; align-items: center; gap: clamp(72px, 11vw, 190px);
     height: 66px; padding: 0 36px; width: auto; max-width: 100%; margin: 0;
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(255,255,255,.32), rgba(236,237,240,.10));
-    backdrop-filter: saturate(190%) blur(42px);
-    -webkit-backdrop-filter: saturate(190%) blur(42px);
-    border: 1px solid rgba(74,77,88,.30);
+    background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.05));
+    backdrop-filter: saturate(170%) blur(30px);
+    -webkit-backdrop-filter: saturate(170%) blur(30px);
+    border: 1px solid rgba(255,255,255,.55);
     box-shadow:
-      inset 0 1px 1px rgba(255,255,255,.95),
-      inset 0 -8px 16px rgba(116,120,138,.20),
-      inset 0 0 0 1px rgba(255,255,255,.10),
-      0 18px 46px rgba(13,13,14,.16),
-      0 4px 12px rgba(13,13,14,.08);
+      inset 0 1px 1px rgba(255,255,255,.9),
+      inset 0 -2px 5px rgba(255,255,255,.22),
+      0 14px 36px rgba(13,13,14,.12),
+      0 3px 9px rgba(13,13,14,.05);
   }
   .brand img { height: 22px; }
   .topbar nav { display: flex; gap: 34px; }
