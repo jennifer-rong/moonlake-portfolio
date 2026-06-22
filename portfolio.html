@@ -217,7 +217,13 @@
   }
   .flip-back { transform: rotateY(180deg); }
   .flip-face img, .flip-face video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  #g-out-vid { display: none; }
+  /* flat video overlay: plays on top of the card (outside the 3D transform -> works on iOS) */
+  .flip-video {
+    position: absolute; inset: 0; z-index: 5; width: 100%; height: 100%; object-fit: cover;
+    border: 1px solid var(--hair); border-radius: 6px; background: var(--paper-2);
+    opacity: 0; visibility: hidden; transition: opacity .4s ease, visibility .4s;
+  }
+  .flip-video.is-on { opacity: 1; visibility: visible; }
   /* multi-image input: 3 reference photos shown whole on a clean board (no weird crops) */
   .flip-collage {
     position: absolute; inset: 0; display: none; gap: 6px; padding: 6px; background: var(--paper-2);
@@ -246,15 +252,9 @@
     opacity: .6; transition: opacity .2s ease, background .2s ease;
   }
   .flip:hover .flip-hint { opacity: 1; background: rgba(13,13,14,.5); }
-  /* single side-by-side video example (no flip): card matches the video aspect */
-  .flip-single {
-    position: absolute; inset: 0; z-index: 5; display: none;
-    width: 100%; height: 100%; object-fit: contain; border-radius: 6px;
-    border: 1px solid var(--hair); background: var(--paper-2);
-  }
-  /* same card box as examples 01/02 (no taller); the video is letterboxed within it */
+  /* single side-by-side example (no flip): same card box, video letterboxed, no flip affordance */
   .flip.is-single { cursor: default; }
-  .flip.is-single .flip-single { display: block; }
+  .flip.is-single .flip-video { object-fit: contain; }
   .flip.is-single .flip-hint { display: none; }
   .flip:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
   /* caption column (right): title, description, specs, example nav */
@@ -497,11 +497,11 @@
             <div class="flip-face flip-back">
               <span class="flip-tag flip-tag--out">Output</span>
               <img id="g-out-img" alt="" draggable="false">
-              <video id="g-out-vid" muted loop playsinline preload="metadata"></video>
             </div>
           </div>
           <span class="flip-hint" aria-hidden="true">&#10227;</span>
-          <video id="g-sbs" class="flip-single" muted loop playsinline aria-hidden="true"></video>
+          <!-- flat video overlay (NOT inside the 3D transform, so it plays on iOS/mobile) -->
+          <video id="g-vid" class="flip-video" muted loop playsinline webkit-playsinline preload="metadata" aria-hidden="true"></video>
         </div>
 
         <div class="g-caption">
@@ -662,17 +662,33 @@ const flipInner = $("#flip-inner");
 const inImg = $("#g-in-img");
 const collage = $("#g-in-collage");
 const outImg = $("#g-out-img");
-const outVid = $("#g-out-vid");
-const sbs = $("#g-sbs");
+const vid = $("#g-vid");          // one flat video player, reused for every example
+vid.muted = true; vid.playsInline = true;
 let active = 0;
 let flipped = false;
 
+// keep retrying play() until the (muted, inline) clip actually starts -- covers buffering
+// races and flaky first-gesture plays on mobile. is-on means it should be playing.
+function ensurePlay(tries) {
+  if (!vid.classList.contains("is-on")) return;
+  vid.play().catch(() => {});
+  if (vid.paused && tries > 0) setTimeout(() => ensurePlay(tries - 1), 220);
+}
+vid.addEventListener("canplay", () => ensurePlay(2));
+vid.addEventListener("loadeddata", () => ensurePlay(2));
+
+// the flat overlay plays when: a single (no-flip) example is shown, OR a flip example is on its output.
+// play() is called synchronously inside the click gesture, which mobile Safari requires.
 function syncVideo() {
   const a = assets[active];
-  if (a.single) { sbs.play().catch(() => {}); outVid.pause(); return; }
-  sbs.pause();
-  if (flipped && a.video) { outVid.play().catch(() => {}); }
-  else { outVid.pause(); }
+  const show = a.single || (a.video && flipped);
+  if (show) {
+    vid.classList.add("is-on");
+    ensurePlay(14);
+  } else {
+    vid.classList.remove("is-on");
+    vid.pause();
+  }
 }
 
 function setFlip(state) {
@@ -685,11 +701,11 @@ function setFlip(state) {
 function renderGallery(i) {
   active = (i + assets.length) % assets.length;
   const a = assets[active];
-  // single side-by-side video example (no flip)
   flip.classList.toggle("is-single", !!a.single);
-  if (a.single) {
-    if (sbs.getAttribute("src") !== a.single) sbs.src = a.single;
-  } else {
+  // point the single flat video player at this example's clip (single OR flip output)
+  const src = a.single || a.video || "";
+  if (src && vid.getAttribute("src") !== src) vid.src = src;
+  if (!a.single) {
     // input front face: a 3-photo collage, or a single image
     if (a.inImgs) {
       collage.innerHTML = a.inImgs.map((k) => `<div class="g-cell"><img src="${IMAGES[k]}" alt="${a.name} — input" draggable="false"></div>`).join("");
@@ -701,15 +717,13 @@ function renderGallery(i) {
       inImg.style.display = "block";
       collage.style.display = "none";
     }
-    if (a.video) {
-      if (outVid.getAttribute("src") !== a.video) outVid.src = a.video;
-      outVid.style.display = "block";
-      outImg.style.display = "none";
-    } else {
+    // image-output fallback (no current asset uses it, but keep the path)
+    if (!a.video) {
       outImg.src = IMAGES[a.img];
       outImg.alt = a.name + " — output";
       outImg.style.display = "block";
-      outVid.style.display = "none";
+    } else {
+      outImg.style.display = "none";
     }
   }
   $("#g-title").textContent = a.name;
