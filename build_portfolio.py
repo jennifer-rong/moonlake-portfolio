@@ -187,19 +187,19 @@ TEMPLATE = r"""<!DOCTYPE html>
     display: flex; justify-content: center;
   }
   .topbar .wrap {
-    display: inline-flex; align-items: center; gap: clamp(28px, 4vw, 56px);
-    height: 58px; padding: 0 28px; width: auto; max-width: 100%; margin: 0;
+    display: inline-flex; align-items: center; gap: clamp(72px, 11vw, 190px);
+    height: 66px; padding: 0 36px; width: auto; max-width: 100%; margin: 0;
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(255,255,255,.46), rgba(255,255,255,.14));
-    backdrop-filter: saturate(180%) blur(36px);
-    -webkit-backdrop-filter: saturate(180%) blur(36px);
-    border: 1px solid rgba(255,255,255,.7);
+    background: linear-gradient(180deg, rgba(255,255,255,.32), rgba(236,237,240,.10));
+    backdrop-filter: saturate(190%) blur(42px);
+    -webkit-backdrop-filter: saturate(190%) blur(42px);
+    border: 1px solid rgba(74,77,88,.30);
     box-shadow:
-      inset 0 1px 1.5px rgba(255,255,255,.98),
-      inset 0 -3px 6px rgba(255,255,255,.30),
-      inset 0 0 0 1px rgba(255,255,255,.12),
-      0 16px 40px rgba(13,13,14,.13),
-      0 3px 10px rgba(13,13,14,.07);
+      inset 0 1px 1px rgba(255,255,255,.95),
+      inset 0 -8px 16px rgba(116,120,138,.20),
+      inset 0 0 0 1px rgba(255,255,255,.10),
+      0 18px 46px rgba(13,13,14,.16),
+      0 4px 12px rgba(13,13,14,.08);
   }
   .brand img { height: 22px; }
   .topbar nav { display: flex; gap: 34px; }
