@@ -207,7 +207,7 @@ TEMPLATE = r"""<!DOCTYPE html>
     text-transform: uppercase; color: var(--ink-2); transition: color .2s ease;
   }
   .topbar nav a:hover { color: var(--ink); }
-  @media (max-width: 680px) { .topbar nav { display: none; } }
+  @media (max-width: 680px) { .topbar { display: none; } html { scroll-padding-top: 18px; } }
 
   /* ---- hero ---- */
   /* fills the viewport; copy bottom-aligned with a top floor so the
